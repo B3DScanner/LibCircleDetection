@@ -21,6 +21,7 @@
 #include "EDLib.h"
 #include <iostream>
 #include<opencv2/imgproc.hpp>
+#include <filesystem>
 
 using namespace cv;
 using namespace std;
@@ -42,15 +43,27 @@ typedef struct threshold {
 
 int main()
 {
-	
+
+	constexpr bool STEP_DISPLAY = false; // set to true to display the illustration for each step
+	constexpr bool USE_GAUSSIAN = true; // set to true to use Gaussian denoise (we do not use in paper)
+
 	// You should create at least two directories: 'Images1' & 'result'
 	// If you have the ground truth, you can create the directory  'GT'
-	cv::String path = "E:/Code/patterns/Images1/";
-	cv::String dst = "E:/Code/patterns/result/";
+	cv::String path = "E:/CircleDetection/src/";
+	cv::String dst = "E:/CircleDetection/dst/";
 	//cv::String GT = "D:/astudy/dataset/circle/temp/GT/";
+
+	path = "C:/B3D/Synthetic_calibration/test_APIS_CalibrationObject3d/circle_detection/";
+	dst = "C:/B3D/Synthetic_calibration/test_APIS_CalibrationObject3d/circle_detection_result/";
+	try {
+		std::filesystem::create_directory(dst);
+	} catch(...) { }
 
 
 	T test_threshold;
+
+	test_threshold.T_inlier = 0.3;
+	test_threshold.sharp_angle = 30.0;
 
 	vector<cv::String> Filenames;
 	cv::glob(path, Filenames);
@@ -73,13 +86,19 @@ int main()
 		//the name of saved detected images
 		cv::String saveName = dst + prefix + "_det." + suffix;
 
+		saveName = dst + std::filesystem::path(file).stem().string() + "_det." + suffix;
+
 	   // Gaussian denoise (optional), we do not use in paper
 		Mat testImgOrigin = imread(file, 1);//0:gray 1:color	
 		Mat testImg = testImgOrigin.clone();
-		cvtColor(testImg, testImg, COLOR_BGR2GRAY);
-		GaussianBlur(testImg, testImg, Size(9, 9), 2, 2);
-		cv::imshow("Clone Image", testImg);
-		waitKey();
+		if (USE_GAUSSIAN) {
+			cvtColor(testImg, testImg, COLOR_BGR2GRAY);
+			GaussianBlur(testImg, testImg, Size(9, 9), 2, 2);
+			if (STEP_DISPLAY) {
+				cv::imshow("Clone Image", testImg);
+				cv::waitKey();
+			}
+		}
 		int height = testImg.rows;
 		int width = testImg.cols;
 
@@ -108,26 +127,31 @@ int main()
 		Mat edgePFImage = testEDPF.getEdgeImage();
 		Mat edge = edgePFImage.clone();
 		edge = edge * -1 + 255;
-		cv::imshow("Edge Image Parameter Free", edge);
-		//imwrite("D:/astudy/dataset/circle/temp/result/edge.jpg", edge);
-		waitKey();
+		if (STEP_DISPLAY) {
+			cv::imshow("Edge Image Parameter Free", edge);
+			//imwrite("D:/astudy/dataset/circle/temp/result/edge.jpg", edge);
+			cv::waitKey();
+		}
 		vector<vector<Point> >EDPFsegments = testEDPF.getSegments();// get edge segments
 
-		//plot edge images
-		cvtColor(test10, test10, COLOR_GRAY2BGR);
-		for (int es1 = 0; es1 < EDPFsegments.size(); es1++)
-		{
-			int r = rand() % 256;
-			int g = rand() % 256;
-			int b = rand() % 256;
-			Scalar SegEdgesColor = Scalar(b, g, r);
-			for (int es2 = 0; es2 < EDPFsegments[es1].size() - 1; es2++)
+		if (STEP_DISPLAY) {
+			//plot edge images
+			cvtColor(test10, test10, COLOR_GRAY2BGR);
+			for (int es1 = 0; es1 < EDPFsegments.size(); es1++)
 			{
-				cv::line(test10, EDPFsegments[es1][es2], EDPFsegments[es1][es2 + 1], SegEdgesColor, 2);//Scalar(0, 0, 0)
+				int r = rand() % 256;
+				int g = rand() % 256;
+				int b = rand() % 256;
+				Scalar SegEdgesColor = Scalar(b, g, r);
+				for (int es2 = 0; es2 < EDPFsegments[es1].size() - 1; es2++)
+				{
+					cv::line(test10, EDPFsegments[es1][es2], EDPFsegments[es1][es2 + 1], SegEdgesColor, 2);//Scalar(0, 0, 0)
+				}
 			}
+
+			imshow("Edge Segments image", test10);
+			cv::waitKey();
 		}
-		imshow("Edge Segments image", test10);
-		waitKey();
 		//imwrite("D:/Test/temp/result/edge_segment.jpg", test10);*/
 
 
@@ -165,24 +189,28 @@ int main()
 		vector<vector<Point>> newSegList = newSegEdgeList->new_segList;
 		vector<vector<Point>> newEdgeList = newSegEdgeList->new_edgeList;
 
-		//plot segLists after sharp turn splitting
-		cvtColor(test2, test2, COLOR_GRAY2BGR);
-		for (int j = 0; j < newSegList.size(); j++)
-		{
-			int r = rand() % 256;
-			int g = rand() % 256;
-			int b = rand() % 256;
-			Scalar colorSharpTurn = Scalar(b, g, r);
-
-			for (int jj2 = 0; jj2 < newEdgeList[j].size() - 1; jj2++)
+		if (STEP_DISPLAY) {
+			//plot segLists after sharp turn splitting
+			cvtColor(test2, test2, COLOR_GRAY2BGR);
+			for (int j = 0; j < newSegList.size(); j++)
 			{
-				//circle(test2, newSegList[j][jj], 1, Scalar(0, 0, 0), 3);
-				line(test2, newEdgeList[j][jj2], newEdgeList[j][jj2 + 1], colorSharpTurn, 2);
+				int r = rand() % 256;
+				int g = rand() % 256;
+				int b = rand() % 256;
+				Scalar colorSharpTurn = Scalar(b, g, r);
+
+				for (int jj2 = 0; jj2 < newEdgeList[j].size() - 1; jj2++)
+				{
+					//circle(test2, newSegList[j][jj], 1, Scalar(0, 0, 0), 3);
+					line(test2, newEdgeList[j][jj2], newEdgeList[j][jj2 + 1], colorSharpTurn, 2);
+				}
+
 			}
 
+			imshow("After sharp turn", test2);
+			cv::waitKey();
 		}
-		imshow("After sharp turn", test2);
-		waitKey();
+
 		//imwrite("sharpTurn.jpg", test2);
 
 
@@ -223,21 +251,24 @@ int main()
 			else { it++; }
 		}//endwhile
 
-		cvtColor(test11, test11, COLOR_GRAY2BGR);
-		for (int j = 0; j < newEdgeListAfterInfexion.size(); j++)
-		{
-			int r = rand() % 256;
-			int g = rand() % 256;
-			int b = rand() % 256;
-			Scalar colorAfterDeleteLinePt = Scalar(b, g, r);
-			for (int jj2 = 0; jj2 < newEdgeListAfterInfexion[j].size() - 1; jj2++)
+		if (STEP_DISPLAY) {
+			cvtColor(test11, test11, COLOR_GRAY2BGR);
+			for (int j = 0; j < newEdgeListAfterInfexion.size(); j++)
 			{
-				//circle(test2, newSegList[j][jj], 1, Scalar(0, 0, 0), 3);
-				line(test11, newEdgeListAfterInfexion[j][jj2], newEdgeListAfterInfexion[j][jj2 + 1], colorAfterDeleteLinePt, 2);
+				int r = rand() % 256;
+				int g = rand() % 256;
+				int b = rand() % 256;
+				Scalar colorAfterDeleteLinePt = Scalar(b, g, r);
+				for (int jj2 = 0; jj2 < newEdgeListAfterInfexion[j].size() - 1; jj2++)
+				{
+					//circle(test2, newSegList[j][jj], 1, Scalar(0, 0, 0), 3);
+					line(test11, newEdgeListAfterInfexion[j][jj2], newEdgeListAfterInfexion[j][jj2 + 1], colorAfterDeleteLinePt, 2);
+				}
 			}
+
+			imshow("After short and line segments remove", test11);
+			cv::waitKey();
 		}
-		imshow("After short and line segments remove", test11);
-		waitKey();
 		//imwrite("D:/Test/temp/result/remove_short_line.jpg", test3);
 
 
@@ -249,24 +280,26 @@ int main()
 		closedEdgeList1 = closedAndNotClosedEdges1->closedEdges;
 		notclosedEdgeList1 = closedAndNotClosedEdges1->notClosedEdges;
 
-		//plot closed edgeLists
-		cvtColor(test4, test4, COLOR_GRAY2BGR);
-		for (int j = 0; j < closedEdgeList1.size(); j++)
-		{
-			int r = rand() % 256;
-			int g = rand() % 256;
-			int b = rand() % 256;
-			Scalar colorClosedEdges = Scalar(b, g, r);
-			for (int jj = 0; jj < closedEdgeList1[j].size() - 1; jj++)
+		if (STEP_DISPLAY) {
+			//plot closed edgeLists
+			cvtColor(test4, test4, COLOR_GRAY2BGR);
+			for (int j = 0; j < closedEdgeList1.size(); j++)
 			{
-				//circle(test4, newSegListAfterInflexion[j][jj], 1, Scalar(0, 0, 0), 3);
-				cv::line(test4, closedEdgeList1[j][jj], closedEdgeList1[j][jj + 1], colorClosedEdges, 2);
+				int r = rand() % 256;
+				int g = rand() % 256;
+				int b = rand() % 256;
+				Scalar colorClosedEdges = Scalar(b, g, r);
+				for (int jj = 0; jj < closedEdgeList1[j].size() - 1; jj++)
+				{
+					//circle(test4, newSegListAfterInflexion[j][jj], 1, Scalar(0, 0, 0), 3);
+					cv::line(test4, closedEdgeList1[j][jj], closedEdgeList1[j][jj + 1], colorClosedEdges, 2);
+				}
+				//imshow("After infexion point remove", test2);
+				//cv::waitKey()
 			}
-			//imshow("After infexion point remove", test2);
-			//waitKey();
+			imshow("closedEdges2", test4);
+			cv::waitKey();
 		}
-		imshow("closedEdges2", test4);
-		waitKey();
 		//imwrite("closedEdges2.jpg", test4);
 
 		/*----------sort notclosedEdgeList for grouping-------------*/
@@ -321,7 +354,7 @@ int main()
 	
 		/*-----compute precision, recall and fmeasure-------*/
 		//pre_rec_fmeasure totalResult = Evaluate(gt, preCircles, 0.8f, testImg);
-		//waitKey();
+		//cv::waitKey()
 		////fmeasureSum += totalResult.fmeasure;
 		//precisionSum += totalResult.precision;
 		//recallSum += totalResult.recall;
