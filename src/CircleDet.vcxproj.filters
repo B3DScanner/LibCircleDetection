@@ -16,45 +16,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="test.cpp">
-      <Filter>源文件</Filter>
+      <Filter>资源文件</Filter>
     </ClCompile>
-    <ClCompile Include="ED.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="EDColor.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="EDPF.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="EDPF.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="ED.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="DetInflexPt.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="EDLib.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="EDColor.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="myTools.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="NFA.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="RDP.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="Reject_sharp_turn.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
   </ItemGroup>
 </Project>

@@ -23,6 +23,8 @@
 #include<opencv2/imgproc.hpp>
 #include <filesystem>
 
+#include <LibCircleDetection.h>
+
 //using namespace cv;
 //using namespace std;
 
