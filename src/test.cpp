@@ -167,10 +167,9 @@ int main()
 
 
 		/*----------extract closed edges-------------------*/
-		closedEdgesExtract* closedAndNotClosedEdges;
-		closedAndNotClosedEdges = extractClosedEdges(edgeList);
-		std::vector<std::vector<cv::Point> > closedEdgeList;
-		closedEdgeList = closedAndNotClosedEdges->closedEdges;
+		//closedEdgesExtract* closedAndNotClosedEdges;
+		auto closedAndNotClosedEdges = extractClosedEdges(edgeList);		
+		auto& closedEdgeList = closedAndNotClosedEdges.closedEdges;
 
 		/*--------approximate edge segments using line segments by method RDP-------*/
 		std::vector<std::vector<cv::Point> > segList;
@@ -273,12 +272,10 @@ int main()
 
 
 		/*-----extract closed edgeLists and not closed edgeLists after inflexion point operation------*/
-		closedEdgesExtract* closedAndNotClosedEdges1;
-		closedAndNotClosedEdges1 = extractClosedEdges(newEdgeListAfterInfexion);
-		std::vector<std::vector<cv::Point> > closedEdgeList1;
-		std::vector<std::vector<cv::Point> > notclosedEdgeList1;
-		closedEdgeList1 = closedAndNotClosedEdges1->closedEdges;
-		notclosedEdgeList1 = closedAndNotClosedEdges1->notClosedEdges;
+	
+		auto closedAndNotClosedEdges1 = extractClosedEdges(newEdgeListAfterInfexion);
+		const auto& closedEdgeList1 = closedAndNotClosedEdges1.closedEdges;
+		const auto& notclosedEdgeList1 = closedAndNotClosedEdges1.notClosedEdges;
 
 		if (STEP_DISPLAY) {
 			//plot closed edgeLists
