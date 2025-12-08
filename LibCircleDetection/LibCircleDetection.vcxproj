@@ -149,22 +149,27 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="CircleDetector.h" />
     <ClInclude Include="DetInflexPt.h" />
     <ClInclude Include="ED.h" />
     <ClInclude Include="EDColor.h" />
-    <ClInclude Include="EDLib.h" />
     <ClInclude Include="EDPF.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="LibCircleDetection.h" />
     <ClInclude Include="myTools.h" />
-    <ClInclude Include="NFA.h" />
     <ClInclude Include="RDP.h" />
     <ClInclude Include="Reject_sharp_turn.h" />
+    <ClInclude Include="ZikaiMacros.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="CircleDetector.cpp" />
+    <ClCompile Include="DetInflexPt.cpp" />
     <ClCompile Include="ED.cpp" />
     <ClCompile Include="EDColor.cpp" />
     <ClCompile Include="EDPF.cpp" />
+    <ClCompile Include="myTools.cpp" />
+    <ClCompile Include="RDP.cpp" />
+    <ClCompile Include="Reject_sharp_turn.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
