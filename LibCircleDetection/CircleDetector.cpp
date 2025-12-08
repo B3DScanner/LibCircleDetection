@@ -3,8 +3,9 @@
 #include "RDP.h"
 #include "Reject_sharp_turn.h"
 #include "DetInflexPt.h"
+#include "myTools.h"
 
-std::vector<Zikai::Circles> Zikai::CircleDetector::detectCircles(const cv::Mat& inputImage)
+std::vector<Zikai::Circle> Zikai::CircleDetector::detectCircles(const cv::Mat& inputImage)
 {
 	if(inputImage.empty())
 	{
@@ -242,7 +243,7 @@ std::vector<Zikai::Circles> Zikai::CircleDetector::detectCircles(const cv::Mat& 
 
 
 		/*--------circle verification using estimated center and radius parameters*/
-		std::vector<Circles> groupedCircles;// grouped arcs
+		std::vector<Circle> groupedCircles;// grouped arcs
 		groupedCircles = circleEstimateGroupedArcs(groupedArcs, groupedOR, groupedArcsThreePt, threshold_.T_inlier, threshold_.T_angle);//fit grouped arcs
 
 		// closed arcs
@@ -252,12 +253,12 @@ std::vector<Zikai::Circles> Zikai::CircleDetector::detectCircles(const cv::Mat& 
 		}//endfor
 
 
-		std::vector<Circles> closedCircles;// closedCircles
+		std::vector<Circle> closedCircles;// closedCircles
 		closedCircles = circleEstimateClosedArcs(closedEdgeList, threshold_.T_inlier_closed);// fit closed edges
 
 
 		//put grouped and closed circles together
-		std::vector<Circles> totalCircles;
+		std::vector<Circle> totalCircles;
 		if (!groupedCircles.empty())
 		{
 			totalCircles = groupedCircles;
@@ -292,7 +293,7 @@ std::vector<Zikai::Circles> Zikai::CircleDetector::detectCircles(const cv::Mat& 
 	}
 }
 
-cv::Mat Zikai::CircleDetector::drawCircles(const cv::Mat& inputImage, const std::vector<Circles>& detectedCircles)
+cv::Mat Zikai::CircleDetector::drawCircles(const cv::Mat& inputImage, const std::vector<Circle>& detectedCircles)
 {
 	if (inputImage.empty())
 	{

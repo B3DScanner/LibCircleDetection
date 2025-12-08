@@ -961,16 +961,16 @@ bool Zikai::circleVerify(const std::vector<double>& x, const std::vector<double>
 }
 
 
-std::vector<Zikai::Circles> Zikai::circleFitGroupedArcs(const std::vector<std::vector<cv::Point>>& groupedArcs, const std::vector<std::vector<cv::Point>>& groupedArcsThreePt)
+std::vector<Zikai::Circle> Zikai::circleFitGroupedArcs(const std::vector<std::vector<cv::Point>>& groupedArcs, const std::vector<std::vector<cv::Point>>& groupedArcsThreePt)
 {
 
 
-	std::vector<Circles> addCircles;
+	std::vector<Circle> addCircles;
 	addCircles.reserve(groupedArcs.size());
 
 	for (int i = 0; i < groupedArcs.size(); i++)
 	{
-		Circles fitCircle;
+		Circle fitCircle;
 		std::vector<double> X, Y;// point coordinates
 		std::vector<cv::Point> stEdMid;// arcs start, mid and end points;
 		stEdMid = groupedArcsThreePt[i];
@@ -1002,16 +1002,16 @@ std::vector<Zikai::Circles> Zikai::circleFitGroupedArcs(const std::vector<std::v
 }
 
 /*------------fit circles using closed arcs---------*/
-std::vector<Zikai::Circles> Zikai::circleFitClosedArcs(const std::vector<std::vector<cv::Point>>& closedArcs)
+std::vector<Zikai::Circle> Zikai::circleFitClosedArcs(const std::vector<std::vector<cv::Point>>& closedArcs)
 {
 
 
-	std::vector<Circles> addCircles;
+	std::vector<Circle> addCircles;
 	addCircles.reserve(closedArcs.size());
 
 	for (int i = 0; i < closedArcs.size(); i++)
 	{
-		Circles fitCircle;
+		Circle fitCircle;
 		std::vector<double> X, Y;
 		std::vector<cv::Point> threePt;
 
@@ -1045,25 +1045,25 @@ std::vector<Zikai::Circles> Zikai::circleFitClosedArcs(const std::vector<std::ve
 
 // cluster circles
 
-bool cmpInlier(const Zikai::Circles& a, const Zikai::Circles& b)
+bool cmpInlier(const Zikai::Circle& a, const Zikai::Circle& b)
 {
 	return a.inlierRatio > b.inlierRatio;
 }//endbool
 
 
-std::vector<Zikai::Circles> Zikai::clusterCircles(std::vector<Circles> totalCircles)
+std::vector<Zikai::Circle> Zikai::clusterCircles(std::vector<Circle> totalCircles)
 {
-	std::vector<Circles> repCircles;// representative circles
+	std::vector<Circle> repCircles;// representative circles
 
 	while (!totalCircles.empty()) {
-		std::vector<Circles> simCircles;// similar circles
+		std::vector<Circle> simCircles;// similar circles
 
-		Circles circle1 = totalCircles.front();
+		Circle circle1 = totalCircles.front();
 
 		for (auto it = totalCircles.begin(); it != totalCircles.end();)
 		{
 
-			Circles circle2 = *it;
+			Circle circle2 = *it;
 			double disCircles = sqrt(pow(circle1.xc - circle2.xc, 2) + pow(circle1.yc - circle2.yc, 2) + pow(circle1.r - circle2.r, 2));
 			if ((disCircles <= 5))// cluster 5\10
 			{
@@ -1091,7 +1091,7 @@ std::vector<Zikai::Circles> Zikai::clusterCircles(std::vector<Circles> totalCirc
 
 
 /*----------verify the circles by inlier ratio----------*/
-std::vector<Zikai::Circles> Zikai::circleEstimateGroupedArcs(
+std::vector<Zikai::Circle> Zikai::circleEstimateGroupedArcs(
 	const std::vector<std::vector<cv::Point>>& groupedArcs,
 	const std::vector<cv::Vec3f>& recordOR,
 	const std::vector<std::vector<cv::Point>>& groupedArcsThreePt,
@@ -1101,12 +1101,12 @@ std::vector<Zikai::Circles> Zikai::circleEstimateGroupedArcs(
 {
 
 
-	std::vector<Circles> addCircles;
+	std::vector<Circle> addCircles;
 	addCircles.reserve(groupedArcs.size());
 
 	for (int i = 0; i < groupedArcs.size(); i++)
 	{
-		Circles fitCircle;
+		Circle fitCircle;
 		std::vector<double> X, Y;// point coordinates
 		std::vector<cv::Point> stEdMid;// arcs start, mid and end points;
 		stEdMid = groupedArcsThreePt[i];
@@ -1143,19 +1143,19 @@ std::vector<Zikai::Circles> Zikai::circleEstimateGroupedArcs(
 
 
 /*------------estimate circles using closed arcs---------*/
-std::vector<Zikai::Circles> Zikai::circleEstimateClosedArcs(std::vector<std::vector<cv::Point>> closedArcs, float T_inlier_closed)
+std::vector<Zikai::Circle> Zikai::circleEstimateClosedArcs(std::vector<std::vector<cv::Point>> closedArcs, float T_inlier_closed)
 {
 
 
 	cv::Mat pre = cv::Mat(500, 700, CV_8UC3, cv::Scalar(255, 255, 255));
 
 
-	std::vector<Circles> addCircles;
+	std::vector<Circle> addCircles;
 
 	for (int i = 0; i < closedArcs.size(); i++)
 	{
 
-		Circles fitCircle;
+		Circle fitCircle;
 		std::vector<double> X, Y;
 		std::vector<cv::Point> threePt;
 		double closedR;
@@ -1215,7 +1215,7 @@ std::string to_string(T value)
 
 
 // draw fitted circles
-cv::Mat Zikai::drawResult(bool onImage, cv::Mat srcImg, std::string srcImgName, const std::vector<Circles>& circles)
+cv::Mat Zikai::drawResult(bool onImage, cv::Mat srcImg, std::string srcImgName, const std::vector<Circle>& circles)
 {
 	cv::Mat colorImage;
 	int height = srcImg.rows;
@@ -1262,7 +1262,7 @@ cv::Mat Zikai::drawResult(bool onImage, cv::Mat srcImg, std::string srcImgName, 
 
 /*-----------load ground truth txt files-------------*/
 
-void Zikai::LoadGT(std::vector<Circles>& gt, const std::string& sGtFileName)
+void Zikai::LoadGT(std::vector<Circle>& gt, const std::string& sGtFileName)
 {
 	std::ifstream in(sGtFileName);
 	if (!in.good())
@@ -1279,7 +1279,7 @@ void Zikai::LoadGT(std::vector<Circles>& gt, const std::string& sGtFileName)
 
 	while (in.good() && n--)
 	{
-		Circles c;
+		Circle c;
 
 		in >> c.xc >> c.yc >> c.r;
 		gt.push_back(c);
@@ -1312,7 +1312,7 @@ int Zikai::Count(const std::vector<bool> v)
 }
 
 
-Zikai::pre_rec_fmeasure Zikai::Evaluate(const std::vector<Circles>& ellGT, const std::vector<Circles>& ellTest, const float th_score, const cv::Mat& img)
+Zikai::pre_rec_fmeasure Zikai::Evaluate(const std::vector<Circle>& ellGT, const std::vector<Circle>& ellTest, const float th_score, const cv::Mat& img)
 {
 	float threshold_overlap = th_score;
 	//float threshold = 0.95f;
@@ -1327,7 +1327,7 @@ Zikai::pre_rec_fmeasure Zikai::Evaluate(const std::vector<Circles>& ellGT, const
 	//绘制每个目标椭圆
 	for (unsigned i = 0; i < sz_gt; ++i)
 	{
-		const Circles& e = ellGT[i];
+		const Circle& e = ellGT[i];
 
 		cv::Mat1b tmp(img.rows, img.cols, uchar(0));
 
@@ -1337,7 +1337,7 @@ Zikai::pre_rec_fmeasure Zikai::Evaluate(const std::vector<Circles>& ellGT, const
 	//plot the detected circles
 	for (unsigned i = 0; i < sz_test; ++i)
 	{
-		const Circles& e = ellTest[i];
+		const Circle& e = ellTest[i];
 
 		cv::Mat1b tmp(img.rows, img.cols, uchar(0));
 		circle(tmp, cv::Point((int)e.xc, (int)e.yc), (int)e.r, cv::Scalar(255), -1);

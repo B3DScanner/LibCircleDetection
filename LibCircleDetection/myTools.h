@@ -19,7 +19,7 @@
 #include <functional>
 #include <algorithm>
 #include <numeric>
-
+#include "ZikaiCircle.h"
 //using namespace std;
 //using namespace cv;
 //using namespace Eigen;
@@ -101,24 +101,21 @@ namespace Zikai {
 	/*----------circle verification using estimated centers and radii-------------------*/
 	bool circleVerify(const std::vector<double>& x, const std::vector<double>& y, int N, const std::vector<cv::Point>& stEdMid, cv::Point2f O, double R, double& pe, double& angle);
 
+	
 	/*------------fit circles using grouped arcs---------*/
-	struct Circles {
-		double xc, yc, r, inlierRatio;
-	};
-
-	std::vector<Circles> circleFitGroupedArcs(const std::vector<std::vector<cv::Point>>& groupedArcs, const std::vector<std::vector<cv::Point>>& groupedArcsThreePt);
+	std::vector<Circle> circleFitGroupedArcs(const std::vector<std::vector<cv::Point>>& groupedArcs, const std::vector<std::vector<cv::Point>>& groupedArcsThreePt);
 
 	/*------------fit circles using closed arcs---------*/
-	std::vector<Circles> circleFitClosedArcs(const std::vector<std::vector<cv::Point>>& closedArcs);
+	std::vector<Circle> circleFitClosedArcs(const std::vector<std::vector<cv::Point>>& closedArcs);
 
 	// cluster circles
 
 
-	std::vector<Circles> clusterCircles(std::vector<Circles> totalCircles);
+	std::vector<Circle> clusterCircles(std::vector<Circle> totalCircles);
 
 
 	/*----------verify the circles by inlier ratio----------*/
-	std::vector<Circles> circleEstimateGroupedArcs(
+	std::vector<Circle> circleEstimateGroupedArcs(
 		const std::vector<std::vector<cv::Point>>& groupedArcs,
 		const std::vector<cv::Vec3f>& recordOR,
 		const std::vector<std::vector<cv::Point>>& groupedArcsThreePt,
@@ -129,15 +126,15 @@ namespace Zikai {
 
 
 	/*------------estimate circles using closed arcs---------*/
-	std::vector<Circles> circleEstimateClosedArcs(std::vector<std::vector<cv::Point>> closedArcs, float T_inlier_closed);
+	std::vector<Circle> circleEstimateClosedArcs(std::vector<std::vector<cv::Point>> closedArcs, float T_inlier_closed);
 
 
 	// draw fitted circles
-	cv::Mat drawResult(bool onImage, cv::Mat srcImg, std::string srcImgName, const std::vector<Circles>& circles);
+	cv::Mat drawResult(bool onImage, cv::Mat srcImg, std::string srcImgName, const std::vector<Circle>& circles);
 
 	/*-----------load ground truth txt files-------------*/
 
-	void LoadGT(std::vector<Circles>& gt, const std::string& sGtFileName);
+	void LoadGT(std::vector<Circle>& gt, const std::string& sGtFileName);
 
 	/*----------compute precision, recall and F-measure------------*/
 	bool TestOverlap(const cv::Mat1b& gt, const cv::Mat1b& test, float th);
@@ -152,6 +149,6 @@ namespace Zikai {
 	};
 
 
-	pre_rec_fmeasure Evaluate(const std::vector<Circles>& ellGT, const std::vector<Circles>& ellTest, const float th_score, const cv::Mat& img);
+	pre_rec_fmeasure Evaluate(const std::vector<Circle>& ellGT, const std::vector<Circle>& ellTest, const float th_score, const cv::Mat& img);
 
 } //end of namespace Zikai

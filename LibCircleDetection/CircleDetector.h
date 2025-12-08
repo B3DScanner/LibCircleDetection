@@ -1,6 +1,7 @@
 #pragma once
 #include <filesystem>
-#include "myTools.h"
+#include "ZikaiCircle.h"
+#include <opencv2/opencv.hpp>
 
 namespace Zikai
 {
@@ -42,11 +43,11 @@ namespace Zikai
 			threshold_ = threshold;
 		}
 
-		std::vector<Circles> detectCircles(const cv::Mat& inputImage);
+		std::vector<Circle> detectCircles(const cv::Mat& inputImage);
 
 		static cv::Mat drawCircles(
 			const cv::Mat& inputImage,
-			const std::vector<Circles>& detectedCircles
+			const std::vector<Circle>& detectedCircles
 		);
 
 	protected:

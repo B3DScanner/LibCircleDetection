@@ -74,6 +74,7 @@
     <IncludePath>$(OPENCV_DIR)\include;$(IncludePath)</IncludePath>
     <LibraryPath>$(OPENCV_DIR)\x64\vc17\lib;$(LibraryPath);$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64)</LibraryPath>
     <AllProjectIncludesArePublic>true</AllProjectIncludesArePublic>
+    <TargetName>$(ProjectName)d</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <IncludePath>$(OPENCV_DIR)\include;$(IncludePath)</IncludePath>
@@ -159,6 +160,7 @@
     <ClInclude Include="myTools.h" />
     <ClInclude Include="RDP.h" />
     <ClInclude Include="Reject_sharp_turn.h" />
+    <ClInclude Include="ZikaiCircle.h" />
     <ClInclude Include="ZikaiMacros.h" />
   </ItemGroup>
   <ItemGroup>
