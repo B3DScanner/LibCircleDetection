@@ -7,45 +7,45 @@
 #include<math.h>
 
 //using namespace std;
-using namespace cv;
+//using namespace cv;
 
 
 struct sharpTurn
 {
-	std::vector<std::vector<Point>> new_edgeList;
-	std::vector<std::vector<Point>> new_segList;
+	std::vector<std::vector<cv::Point>> new_edgeList;
+	std::vector<std::vector<cv::Point>> new_segList;
 };
 
 
-sharpTurn* rejectSharpTurn(std::vector<std::vector<Point>> edgeList, std::vector<std::vector<Point> >segList, float angle)
+sharpTurn* rejectSharpTurn(std::vector<std::vector<cv::Point>> edgeList, std::vector<std::vector<cv::Point> >segList, float angle)
 {
 	sharpTurn* result = new sharpTurn;
 	int no_seg_grps = segList.size();
-	std::vector<Point>break_points;
+	std::vector<cv::Point>break_points;
 	double Threshold_theta = CV_PI / 2;
-	std::vector<std::vector<Point> > new_segList1, new_edgeList1;
+	std::vector<std::vector<cv::Point> > new_segList1, new_edgeList1;
 	
 
 	for (int ii = 0; ii < no_seg_grps; ii++)//no_seg_grps
 	{
 		
-		std::vector<Point> present_seg_grp = segList[ii];
+		std::vector<cv::Point> present_seg_grp = segList[ii];
 		int no_of_seg = present_seg_grp.size() - 1;//seg_point -1=no_of_seg;
 		// use cos(angle) calculation to determine sharp turn angles
-		Point present_vector = Point(present_seg_grp[1].x - present_seg_grp[0].x, present_seg_grp[1].y - present_seg_grp[0].y);
+		cv::Point present_vector = cv::Point(present_seg_grp[1].x - present_seg_grp[0].x, present_seg_grp[1].y - present_seg_grp[0].y);
 		
 
 		for (int seg_no = 0; seg_no < no_of_seg - 1; seg_no++)
 		{
 			double length_present_vector = pow(pow(present_vector.x, 2) + pow(present_vector.y, 2), 0.5);
-			Point next_vector = Point(present_seg_grp[seg_no + 2].x - present_seg_grp[seg_no + 1].x, present_seg_grp[seg_no + 2].y - present_seg_grp[seg_no + 1].y);
+			cv::Point next_vector = cv::Point(present_seg_grp[seg_no + 2].x - present_seg_grp[seg_no + 1].x, present_seg_grp[seg_no + 2].y - present_seg_grp[seg_no + 1].y);
 			double length_next_vector = pow(pow(next_vector.x, 2) + pow(next_vector.y, 2), 0.5);
 			double cos_pre_next = (present_vector.x * next_vector.x + present_vector.y * next_vector.y) / (length_present_vector * length_next_vector);
 			
 			if (cos_pre_next <= cos(angle / 180.0 * CV_PI))
 			{
 				// check again if it is true sharp turns
-				Point temp = Point(ii, seg_no + 1);// record the seg_no+1 node of ii-th segList
+				cv::Point temp = cv::Point(ii, seg_no + 1);// record the seg_no+1 node of ii-th segList
 				break_points.push_back(temp);
 
 			}
@@ -63,8 +63,8 @@ sharpTurn* rejectSharpTurn(std::vector<std::vector<Point>> edgeList, std::vector
 	int current_break = break_points[index].x;
 	for (int ii = 0; ii < no_seg_grps; ii++)
 	{
-		std::vector<Point> current_seg = segList[ii];
-		std::vector<Point> current_edge = edgeList[ii];
+		std::vector<cv::Point> current_seg = segList[ii];
+		std::vector<cv::Point> current_edge = edgeList[ii];
 		if (current_seg.size() > 2)
 		{
 			if (ii == current_break)
@@ -102,7 +102,7 @@ sharpTurn* rejectSharpTurn(std::vector<std::vector<Point>> edgeList, std::vector
 
 					if ((last_seg_index - first_seg_index) >= 1)
 					{
-						std::vector<Point> block_seg, block_edge;
+						std::vector<cv::Point> block_seg, block_edge;
 						for (int kk = first_seg_index; kk <= last_seg_index; kk++)
 						{
 							block_seg.push_back(current_seg[kk]);
@@ -128,7 +128,7 @@ sharpTurn* rejectSharpTurn(std::vector<std::vector<Point>> edgeList, std::vector
 				//block after break
 				if ((current_seg.size() - last_seg_index) >= 2)
 				{
-					std::vector<Point> block1_seg, block1_edge;
+					std::vector<cv::Point> block1_seg, block1_edge;
 					for (int ll = last_seg_index; ll < current_seg.size(); ll++)
 					{
 						

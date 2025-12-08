@@ -18,20 +18,20 @@
 #include <fstream>
 
 //using namespace std;
-using namespace cv;
+//using namespace cv;
 using namespace Eigen;
 
 // extract closed edgeLists and not closed edgeLists
 struct closedEdgesExtract {
-	std::vector<std::vector<Point> >closedEdges;
-	std::vector<std::vector<Point> >notClosedEdges;
+	std::vector<std::vector<cv::Point> >closedEdges;
+	std::vector<std::vector<cv::Point> >notClosedEdges;
 };
-closedEdgesExtract* extractClosedEdges(std::vector<std::vector<Point> >edgeList)
+closedEdgesExtract* extractClosedEdges(std::vector<std::vector<cv::Point> >edgeList)
 {
 	closedEdgesExtract* edges = new closedEdgesExtract;
 	for (int i = 0; i < (edgeList).size(); i++)
 	{
-		Point st, ed;
+		cv::Point st, ed;
 		st = edgeList[i].front();
 		ed = edgeList[i].back();
 		double dist = sqrt(pow(st.x - ed.x, 2) + pow(st.y - ed.y, 2));
@@ -48,13 +48,13 @@ closedEdgesExtract* extractClosedEdges(std::vector<std::vector<Point> >edgeList)
 }
 
 
-bool cmp(const std::vector<Point>& a, const std::vector<Point>& b)
+bool cmp(const std::vector<cv::Point>& a, const std::vector<cv::Point>& b)
 {
 	return a.size() > b.size();
 }//endbool
 
 /*------------sort arcs by their length-------------*/
-std::vector<std::vector<Point>> sortEdgeList(std::vector<std::vector<Point>> edgelists)
+std::vector<std::vector<cv::Point>> sortEdgeList(std::vector<std::vector<cv::Point>> edgelists)
 {
 	/* sort segments from the longest to the shortest*/
 	std::sort(edgelists.begin(), edgelists.end(), cmp);
@@ -65,7 +65,7 @@ std::vector<std::vector<Point>> sortEdgeList(std::vector<std::vector<Point>> edg
 
 
 ///*--------------calculate circular centers and radii--------------*/
-bool comCirCenterRadius(Point A, Point B, Point C, double* R, Point2f* O)
+bool comCirCenterRadius(cv::Point A, cv::Point B, cv::Point C, double* R, cv::Point2f* O)
 {
 
 	//the length for triangle edges
@@ -104,18 +104,18 @@ int Sign(float x)
 }
 
 /*-----------calculate circular centers and radii for the two arcs------------*/
-bool twoArcsCenterRadius(std::vector<Point> A1B1C1, std::vector<Point> A2B2C2, bool* flag, Vec3f* temp1_center_radius, Vec3f* temp2_center_radius, int T_o, int T_r)
+bool twoArcsCenterRadius(std::vector<cv::Point> A1B1C1, std::vector<cv::Point> A2B2C2, bool* flag, cv::Vec3f* temp1_center_radius, cv::Vec3f* temp2_center_radius, int T_o, int T_r)
 {
 
 	*flag = false;
 	// constraint 1:
 	//S2 E2 and M1 lie in different sizes of Line S1E1 && S1 E1 and M2 lie in different sizes of Line S2E2
-	Point S1 = A1B1C1[2];//A1B1C1.front()
-	Point E1 = *(A1B1C1.end() - 2);//A1B1C1.back()
-	Point S2 = A2B2C2[2];//A2B2C2.front()
-	Point E2 = *(A2B2C2.end() - 2);//A2B2C2.back()
-	Point M1 = A1B1C1[A1B1C1.size() / 2];
-	Point M2 = A2B2C2[A2B2C2.size() / 2];
+	cv::Point S1 = A1B1C1[2];//A1B1C1.front()
+	cv::Point E1 = *(A1B1C1.end() - 2);//A1B1C1.back()
+	cv::Point S2 = A2B2C2[2];//A2B2C2.front()
+	cv::Point E2 = *(A2B2C2.end() - 2);//A2B2C2.back()
+	cv::Point M1 = A1B1C1[A1B1C1.size() / 2];
+	cv::Point M2 = A2B2C2[A2B2C2.size() / 2];
 	// Line S1E1, S2E2
 	float K_S1E1 = (S1.x - E1.x) / (S1.y - E1.y + 1e-6);
 	float K_S2E2 = (S2.x - E2.x) / (S2.y - E2.y + 1e-6);
@@ -130,16 +130,16 @@ bool twoArcsCenterRadius(std::vector<Point> A1B1C1, std::vector<Point> A2B2C2, b
 	if (SignS1 * SignE1 >= 0 || SignS2 * SignE2 >= 0)// different sides then check constraint 2
 	{
 		//if constratint 1 holds, then check constratint 2
-		Point A1 = A1B1C1[5];//A1B1C1.front()  A1B1C1[5]
-		Point C1 = *(A1B1C1.end() - 6);//A1B1C1.back() *(A1B1C1.end()-6)
+		cv::Point A1 = A1B1C1[5];//A1B1C1.front()  A1B1C1[5]
+		cv::Point C1 = *(A1B1C1.end() - 6);//A1B1C1.back() *(A1B1C1.end()-6)
 		int firstMidIndex = A1B1C1.size() / 2;
-		Point B1 = A1B1C1[firstMidIndex];
+		cv::Point B1 = A1B1C1[firstMidIndex];
 
 
-		Point A2 = *(A2B2C2.begin() + 5);//A2B2C2.front()
-		Point C2 = *(A2B2C2.end() - 6);//A2B2C2.back()
+		cv::Point A2 = *(A2B2C2.begin() + 5);//A2B2C2.front()
+		cv::Point C2 = *(A2B2C2.end() - 6);//A2B2C2.back()
 		int secondMidIndex = A2B2C2.size() / 2;
-		Point B2 = A2B2C2[secondMidIndex];
+		cv::Point B2 = A2B2C2[secondMidIndex];
 
 
 		// the length of edge A1C1 
@@ -185,7 +185,7 @@ bool twoArcsCenterRadius(std::vector<Point> A1B1C1, std::vector<Point> A2B2C2, b
 			double c22 = pow(C2.y, 2) + pow(C2.x, 2) - pow(B1.y, 2) - pow(B1.x, 2);
 
 			//centers
-			Point2f O1, O2;
+			cv::Point2f O1, O2;
 			O1.x = (a11 * c12 - a12 * c11) / (a11 * b12 - a12 * b11);
 			O1.y = (c11 * b12 - c12 * b11) / (a11 * b12 - a12 * b11);
 
@@ -199,7 +199,7 @@ bool twoArcsCenterRadius(std::vector<Point> A1B1C1, std::vector<Point> A2B2C2, b
 
 				// compute inlier ratio
 				double R = (R1 + R2) / 2;
-				Point2f O;
+				cv::Point2f O;
 				O.x = (O1.x + O2.x) / 2;
 				O.y = (O1.y + O2.y) / 2;
 
@@ -243,19 +243,19 @@ bool twoArcsCenterRadius(std::vector<Point> A1B1C1, std::vector<Point> A2B2C2, b
 
 
 /*---------estimate centers and radius by two grouped arcs------------*/
-bool estimateCenterRadius(std::vector<Point> A1B1C1, std::vector<Point> A2B2C2, double* estimateR, Point2f* estimateO)
+bool estimateCenterRadius(std::vector<cv::Point> A1B1C1, std::vector<cv::Point> A2B2C2, double* estimateR, cv::Point2f* estimateO)
 {
 
-	Point A1 = A1B1C1[5];//A1B1C1.front()
-	Point C1 = *(A1B1C1.end() - 6);//A1B1C1.back()
+	cv::Point A1 = A1B1C1[5];//A1B1C1.front()
+	cv::Point C1 = *(A1B1C1.end() - 6);//A1B1C1.back()
 	int firstMidIndex = A1B1C1.size() / 2;
-	Point B1 = A1B1C1[firstMidIndex];
+	cv::Point B1 = A1B1C1[firstMidIndex];
 
 
-	Point A2 = *(A2B2C2.begin() + 5);//A2B2C2.front()
-	Point C2 = *(A2B2C2.end() - 6);//A2B2C2.back()
+	cv::Point A2 = *(A2B2C2.begin() + 5);//A2B2C2.front()
+	cv::Point C2 = *(A2B2C2.end() - 6);//A2B2C2.back()
 	int secondMidIndex = A2B2C2.size() / 2;
-	Point B2 = A2B2C2[secondMidIndex];
+	cv::Point B2 = A2B2C2[secondMidIndex];
 
 
 
@@ -298,7 +298,7 @@ bool estimateCenterRadius(std::vector<Point> A1B1C1, std::vector<Point> A2B2C2, 
 	double b22 = 2 * (C2.x - B1.x);
 	double c22 = pow(C2.y, 2) + pow(C2.x, 2) - pow(B1.y, 2) - pow(B1.x, 2);
 	//centers
-	Point2f O1, O2;
+	cv::Point2f O1, O2;
 	O1.x = (a11 * c12 - a12 * c11) / (a11 * b12 - a12 * b11);
 	O1.y = (c11 * b12 - c12 * b11) / (a11 * b12 - a12 * b11);
 
@@ -307,22 +307,22 @@ bool estimateCenterRadius(std::vector<Point> A1B1C1, std::vector<Point> A2B2C2, 
 
 	// S_A1C1A2
 	double R_A1C1A2;
-	Point2f O_A1C1A2;
+	cv::Point2f O_A1C1A2;
 	comCirCenterRadius(A1, C1, A2, &R_A1C1A2, &O_A1C1A2);
 
 	// S_A1C1C2
 	double R_A1C1C2;
-	Point2f O_A1C1C2;
+	cv::Point2f O_A1C1C2;
 	comCirCenterRadius(A1, C1, C2, &R_A1C1C2, &O_A1C1C2);
 
 	// S_A2C2A1
 	double R_A2C2A1;
-	Point2f O_A2C2A1;
+	cv::Point2f O_A2C2A1;
 	comCirCenterRadius(A2, C2, A1, &R_A2C2A1, &O_A2C2A1);
 
 	// S_A2C2C1
 	double R_A2C2C1;
-	Point2f O_A2C2C1;
+	cv::Point2f O_A2C2C1;
 	comCirCenterRadius(A2, C2, C1, &R_A2C2C1, &O_A2C2C1);
 
 	//using median computes centers and radius
@@ -357,20 +357,20 @@ bool estimateCenterRadius(std::vector<Point> A1B1C1, std::vector<Point> A2B2C2, 
 
 	sort(tempOY.begin(), tempOY.end());
 	double estimateOY = (tempOY[2] + tempOY[3]) / 2.0;
-	*estimateO = Point2f(estimateOX, estimateOY);
+	*estimateO = cv::Point2f(estimateOX, estimateOY);
 	return true;
 
 }
 
 /*---------estimate centers and radius by a single arc------------*/
-bool estimateSingleCenterRadius(std::vector<Point> A1B1C1, double* estimateR, Point2f* estimateO)
+bool estimateSingleCenterRadius(std::vector<cv::Point> A1B1C1, double* estimateR, cv::Point2f* estimateO)
 {
-	Point A1 = A1B1C1[5];//A1B1C1.front()
-	Point C1 = *(A1B1C1.end() - 6);//A1B1C1.back()
+	cv::Point A1 = A1B1C1[5];//A1B1C1.front()
+	cv::Point C1 = *(A1B1C1.end() - 6);//A1B1C1.back()
 	int firstMidIndex = A1B1C1.size() / 2;
-	Point B1 = A1B1C1[firstMidIndex];
-	Point D11 = A1B1C1[5 + (firstMidIndex - 5) / 2];
-	Point D12 = A1B1C1[firstMidIndex + (A1B1C1.size() - firstMidIndex) / 2];
+	cv::Point B1 = A1B1C1[firstMidIndex];
+	cv::Point D11 = A1B1C1[5 + (firstMidIndex - 5) / 2];
+	cv::Point D12 = A1B1C1[firstMidIndex + (A1B1C1.size() - firstMidIndex) / 2];
 
 
 	// first estimate center and radius using arcs by themselves
@@ -378,17 +378,17 @@ bool estimateSingleCenterRadius(std::vector<Point> A1B1C1, double* estimateR, Po
 	// for arc A1B1C1
 	// S_A1B1C1
 	double R_A1B1C1;
-	Point2f O_A1B1C1;
+	cv::Point2f O_A1B1C1;
 	comCirCenterRadius(A1, B1, C1, &R_A1B1C1, &O_A1B1C1);
 
 	// S_A1D11C1
 	double R_A1D11C1;
-	Point2f O_A1D11C1;
+	cv::Point2f O_A1D11C1;
 	comCirCenterRadius(A1, D11, C1, &R_A1D11C1, &O_A1D11C1);
 
 	// S_A1D12C1
 	double R_A1D12C1;
-	Point2f O_A1D12C1;
+	cv::Point2f O_A1D12C1;
 	comCirCenterRadius(A1, D12, C1, &R_A1D12C1, &O_A1D12C1);
 
 
@@ -415,52 +415,52 @@ bool estimateSingleCenterRadius(std::vector<Point> A1B1C1, double* estimateR, Po
 
 	sort(tempOY.begin(), tempOY.end());
 	double estimateOY = tempOY[1];
-	*estimateO = Point2f(estimateOX, estimateOY);
+	*estimateO = cv::Point2f(estimateOX, estimateOY);
 	return true;
 
 }
 
 
 /*---------estimate centers and radius by a closed circle ------------*/
-bool estimateClosedCenterRadius(std::vector<Point> A1B1C1, double* estimateR, Point2f* estimateO)
+bool estimateClosedCenterRadius(std::vector<cv::Point> A1B1C1, double* estimateR, cv::Point2f* estimateO)
 {
 	// sample 5pts evenly
 	int ptNum = A1B1C1.size();
-	Point A = A1B1C1[ptNum / 5];
-	Point B = A1B1C1[2 * ptNum / 5];
-	Point C = A1B1C1[3 * ptNum / 5];
-	Point D = A1B1C1[4 * ptNum / 5];
-	Point E = A1B1C1[ptNum - 7];//A1B1C1[ptNum-10]
+	cv::Point A = A1B1C1[ptNum / 5];
+	cv::Point B = A1B1C1[2 * ptNum / 5];
+	cv::Point C = A1B1C1[3 * ptNum / 5];
+	cv::Point D = A1B1C1[4 * ptNum / 5];
+	cv::Point E = A1B1C1[ptNum - 7];//A1B1C1[ptNum-10]
 
 
 
 	// five new inscribed triangles
 	//ACD
 	double R_ACD;
-	Point2f O_ACD;
+	cv::Point2f O_ACD;
 	comCirCenterRadius(A, C, D, &R_ACD, &O_ACD);
 	
 	//ACE
 	double R_ACE;
-	Point2f O_ACE;
+	cv::Point2f O_ACE;
 	comCirCenterRadius(A, C, E, &R_ACE, &O_ACE);
 	
 
 	//ABD
 	double R_ABD;
-	Point2f O_ABD;
+	cv::Point2f O_ABD;
 	comCirCenterRadius(A, B, D, &R_ABD, &O_ABD);
 	
 
 	//BCE
 	double R_BCE;
-	Point2f O_BCE;
+	cv::Point2f O_BCE;
 	comCirCenterRadius(B, C, E, &R_BCE, &O_BCE);
 	
 
 	//DBE
 	double R_DBE;
-	Point2f O_DBE;
+	cv::Point2f O_DBE;
 	comCirCenterRadius(D, B, E, &R_DBE, &O_DBE);
 	
 
@@ -495,7 +495,7 @@ bool estimateClosedCenterRadius(std::vector<Point> A1B1C1, double* estimateR, Po
 
 	sort(tempOY.begin(), tempOY.end());
 	double estimateOY = tempOY[2];
-	*estimateO = Point2f(estimateOX, estimateOY);
+	*estimateO = cv::Point2f(estimateOX, estimateOY);
 	
 	return true;
 
@@ -532,12 +532,12 @@ Eigen::MatrixXd pinv_eigen_based(Eigen::MatrixXd& origin, const float er = 1.e-6
 }
 
 // then compute refinement center and radius parameters
-Vec3d refine_center_radius(std::vector<Point> circle_pt, Vec3f center_radius)
+cv::Vec3d refine_center_radius(std::vector<cv::Point> circle_pt, cv::Vec3f center_radius)
 {
 	int pt_num = circle_pt.size();
-	MatrixXd A(pt_num, 3);
-	MatrixXd E(pt_num, 1);
-	Point2f circle_center(center_radius[0], center_radius[1]);
+	Eigen::MatrixXd A(pt_num, 3);
+	Eigen::MatrixXd E(pt_num, 1);
+	cv::Point2f circle_center(center_radius[0], center_radius[1]);
 	double circle_r = center_radius[2];
 	// construct coefficient matrix A and value matrix E
 	for (int i = 0; i < pt_num; i++)
@@ -548,7 +548,7 @@ Vec3d refine_center_radius(std::vector<Point> circle_pt, Vec3f center_radius)
 		E(i) = pow(A(i, 0), 2) + pow(A(i, 1), 2) - pow(A(i, 2), 2);
 	}
 	// pseudoinverse of A: use SVD and default error is 0
-	Vec3d center_radius_refinement;
+	cv::Vec3d center_radius_refinement;
 	center_radius_refinement[0] = center_radius[0] - (-1 / 2.0 * pinv_eigen_based(A) * E)(0);
 	center_radius_refinement[1] = center_radius[1] - (-1 / 2.0 * pinv_eigen_based(A) * E)(1);
 	center_radius_refinement[2] = center_radius[2] - (-1 / 2.0 * pinv_eigen_based(A) * E)(2);
@@ -559,39 +559,39 @@ Vec3d refine_center_radius(std::vector<Point> circle_pt, Vec3f center_radius)
 
 /*--------------- try using co-circle theorem firstly to group arcs----------*/
 struct groupArcs {
-	std::vector<std::vector<Point>> arcsFromSameCircles;
-	std::vector<std::vector<Point>> arcsStartMidEnd;
-	std::vector<Vec3f> recordOR;//record the estimated centers and radii
+	std::vector<std::vector<cv::Point>> arcsFromSameCircles;
+	std::vector<std::vector<cv::Point>> arcsStartMidEnd;
+	std::vector<cv::Vec3f> recordOR;//record the estimated centers and radii
 };
 
 
-groupArcs* coCircleGroupArcs(std::vector<std::vector<Point>> edgelist, int T_o, int T_r)
+groupArcs* coCircleGroupArcs(std::vector<std::vector<cv::Point>> edgelist, int T_o, int T_r)
 {
 	groupArcs* arcs = new groupArcs;
 	
 	// use to empty some edgelist
-	std::vector<Point> vec;
-	Point temp = Point(0, 0);
+	std::vector<cv::Point> vec;
+	cv::Point temp = cv::Point(0, 0);
 	vec.push_back(temp);
 	for (int i = 0; i < edgelist.size(); i++)
 	{
 		int leng = edgelist[i].size();
 		if (leng == 1) { continue; }
 		// put edge1 into outEdgeList first
-		std::vector<Point> CirPt;
-		std::vector<std::vector<Point> >outEdgeList;
+		std::vector<cv::Point> CirPt;
+		std::vector<std::vector<cv::Point> >outEdgeList;
 		outEdgeList.push_back(edgelist[i]);
 	
-		Vec3f groupedOR;
-		std::vector<Point> outThreePt;
-		Point start = edgelist[i].front();
-		Point end = edgelist[i].back();
-		Point mid = edgelist[i][leng / 2];
+		cv::Vec3f groupedOR;
+		std::vector<cv::Point> outThreePt;
+		cv::Point start = edgelist[i].front();
+		cv::Point end = edgelist[i].back();
+		cv::Point mid = edgelist[i][leng / 2];
 		outThreePt.push_back(start);
 		outThreePt.push_back(end);
 		outThreePt.push_back(mid);
 		
-		std::vector<Vec3f> CenterRadius;// record center and radius for every paired arcs, used for further radii and center estimation 
+		std::vector<cv::Vec3f> CenterRadius;// record center and radius for every paired arcs, used for further radii and center estimation 
 		//iterate to find the grouping arcs
 		for (int j = 0; j < edgelist.size(); j++)
 		{
@@ -601,8 +601,8 @@ groupArcs* coCircleGroupArcs(std::vector<std::vector<Point>> edgelist, int T_o, 
 				// group edgelist[j] with outEdgeList
 				bool flag = false;
 				int pass = 0;// record whether two edges can be grouped
-				Vec3f temp1_center_radius;// record the two radii and centers for paired two arcs
-				Vec3f temp2_center_radius;// temp1,temp2
+				cv::Vec3f temp1_center_radius;// record the two radii and centers for paired two arcs
+				cv::Vec3f temp2_center_radius;// temp1,temp2
 				for (int k = 0; k < outEdgeList.size(); k++)
 				{
 					twoArcsCenterRadius(outEdgeList[k], edgelist[j], &flag, &temp1_center_radius, &temp2_center_radius, T_o, T_r);
@@ -616,9 +616,9 @@ groupArcs* coCircleGroupArcs(std::vector<std::vector<Point>> edgelist, int T_o, 
 				if (pass == outEdgeList.size())// edgelist[j] can be grouped with  all before outEdgeList
 				{
 					outEdgeList.push_back(edgelist[j]);
-					Point start2 = edgelist[j].front();
-					Point end2 = edgelist[j].back();
-					Point mid2 = edgelist[j][edgelist[j].size() / 2];
+					cv::Point start2 = edgelist[j].front();
+					cv::Point end2 = edgelist[j].back();
+					cv::Point mid2 = edgelist[j][edgelist[j].size() / 2];
 					outThreePt.push_back(start2);
 					outThreePt.push_back(end2);
 					outThreePt.push_back(mid2);
@@ -639,17 +639,17 @@ groupArcs* coCircleGroupArcs(std::vector<std::vector<Point>> edgelist, int T_o, 
 		if (outEdgeList.size() == 1)// edgelist[i] didn't find grouped arcs
 		{
 			double singleR;
-			Point2f singleO;
+			cv::Point2f singleO;
 			estimateSingleCenterRadius(edgelist[i], &singleR, &singleO);
-			groupedOR = Vec3f(singleO.x, singleO.y, singleR);
+			groupedOR = cv::Vec3f(singleO.x, singleO.y, singleR);
 		}
 		// estimate center and radius for two arcs
 		if (outEdgeList.size() == 2)// edgelist[i] finds one arc to pair
 		{
 			double TwoR;
-			Point2f TwoO;
+			cv::Point2f TwoO;
 			estimateCenterRadius(outEdgeList[0], outEdgeList[1], &TwoR, &TwoO); 
-			groupedOR = Vec3f(TwoO.x, TwoO.y, TwoR);
+			groupedOR = cv::Vec3f(TwoO.x, TwoO.y, TwoR);
 		}
 
 		//estimate center and radius for three or more arcs
@@ -669,7 +669,7 @@ groupArcs* coCircleGroupArcs(std::vector<std::vector<Point>> edgelist, int T_o, 
 			sort(temp_y.begin(), temp_y.end());
 			// find the median for more than two arcs
 			double MoreR;
-			Point2f MoreO;
+			cv::Point2f MoreO;
 			int num_center_radius = CenterRadius.size();
 			if (num_center_radius / 2 == 0)// even number
 			{
@@ -685,11 +685,11 @@ groupArcs* coCircleGroupArcs(std::vector<std::vector<Point>> edgelist, int T_o, 
 				
 			}
 			
-			groupedOR = Vec3f(MoreO.x, MoreO.y, MoreR);
+			groupedOR = cv::Vec3f(MoreO.x, MoreO.y, MoreR);
 		}
 
 		// refine the estimated center and radius
-		Vec3d center_radius_refinement = refine_center_radius(CirPt, groupedOR);
+		cv::Vec3d center_radius_refinement = refine_center_radius(CirPt, groupedOR);
 
 		// finally detected grouped arcs, three points on it, and recoreded center and radius. 
 		edgelist[i] = vec;
@@ -706,7 +706,7 @@ groupArcs* coCircleGroupArcs(std::vector<std::vector<Point>> edgelist, int T_o, 
 // The circle equation is of the form: (x-xc)^2 + (y-yc)^2 = r^2
 // Returns true if there is a fit, false in case no circles can be fit
 //
-bool CircleFit(std::vector<double>x, std::vector<double>y, int N, std::vector<Point> stEdMid, double* pxc, double* pyc, double* pr, double* pe, double* angle)
+bool CircleFit(std::vector<double>x, std::vector<double>y, int N, std::vector<cv::Point> stEdMid, double* pxc, double* pyc, double* pr, double* pe, double* angle)
 {
 	//*pe = 0;//precision
 	if (N < 3) return false;
@@ -779,8 +779,8 @@ bool CircleFit(std::vector<double>x, std::vector<double>y, int N, std::vector<Po
 	*/
 
 	//first compute circular points' normals using the contour method
-	std::vector<Point2f> DT;
-	std::vector<Point2f> D1(N), D2(N);
+	std::vector<cv::Point2f> DT;
+	std::vector<cv::Point2f> D1(N), D2(N);
 	for (int j = 0; j < N - 1; j++)
 	{   // differences between two consecutive points
 		float L = sqrt(pow(x[j] - x[j + 1], 2) + pow(y[j] - y[j + 1], 2));
@@ -790,13 +790,13 @@ bool CircleFit(std::vector<double>x, std::vector<double>y, int N, std::vector<Po
 		D2[j + 1].y = (y[j] - y[j + 1]) / L;
 	}//endfor
 	float LL = sqrt(pow(x.back() - x.front(), 2) + pow(y.back() - y.front(), 2));
-	Point2f end2start;
+	cv::Point2f end2start;
 	end2start.x = (x.back() - x.front()) / LL;
 	end2start.y = (y.back() - y.front()) / LL;
 	D1.push_back(end2start);
 	D2.front() = end2start;
 	//D=D1+D2 Normal
-	std::vector<Point2f> D(N), Nom(N);
+	std::vector<cv::Point2f> D(N), Nom(N);
 	for (int i = 0; i < N; i++)
 	{
 		D[i].x = D1[i].x + D2[i].x;
@@ -819,7 +819,7 @@ bool CircleFit(std::vector<double>x, std::vector<double>y, int N, std::vector<Po
 		if (d <= 2)// distance less than 2 pixel
 		{
 			float theta = atan2(dy, dx);
-			Point2f circleNormal = Point2f(cos(theta), sin(theta));
+			cv::Point2f circleNormal = cv::Point2f(cos(theta), sin(theta));
 			float cosPtCirNormal2 = (Nom[i].x * circleNormal.x + Nom[i].y * circleNormal.y);
 			if (abs(cosPtCirNormal2) >= cos(20.0 / 180 * CV_PI))// angle<=22.5°remember float calculations
 			{
@@ -835,19 +835,19 @@ bool CircleFit(std::vector<double>x, std::vector<double>y, int N, std::vector<Po
 	
 	if (inlierEdgeRatio >= 0.5)// take up 0.8 of edge points
 	{
-		Point center = Point(*pxc, *pyc);
+		cv::Point center = cv::Point(*pxc, *pyc);
 		
 		inlierRatio = inlierNum / (2 * CV_PI * R);
 		// compute span angles by the three points
 		int num = stEdMid.size() / 3;
 		for (int k = 0; k < num; k++)
 		{
-			Point stPt(stEdMid[3 * k]);
-			Point edPt(stEdMid[3 * k + 1]);
-			Point midPt(stEdMid[3 * k + 2]);
+			cv::Point stPt(stEdMid[3 * k]);
+			cv::Point edPt(stEdMid[3 * k + 1]);
+			cv::Point midPt(stEdMid[3 * k + 2]);
 			
-			Point o2st = Point(stPt.x - *pxc, stPt.y - *pyc);
-			Point o2ed = Point(edPt.x - *pxc, edPt.y - *pyc);
+			cv::Point o2st = cv::Point(stPt.x - *pxc, stPt.y - *pyc);
+			cv::Point o2ed = cv::Point(edPt.x - *pxc, edPt.y - *pyc);
 			double o2stL = sqrt(pow(o2st.x, 2) + pow(o2st.y, 2));
 			double o2edL = sqrt(pow(o2ed.x, 2) + pow(o2ed.y, 2));
 			double cosSA = (o2st.x * o2ed.x + o2st.y * o2ed.y) / (o2stL * o2edL);
@@ -878,7 +878,7 @@ bool CircleFit(std::vector<double>x, std::vector<double>y, int N, std::vector<Po
 
 
 /*----------circle verification using estimated centers and radii-------------------*/
-bool circleVerify(std::vector<double>x, std::vector<double>y, int N, std::vector<Point> stEdMid, Point2f O, double R, double* pe, double* angle)
+bool circleVerify(std::vector<double>x, std::vector<double>y, int N, std::vector<cv::Point> stEdMid, cv::Point2f O, double R, double* pe, double* angle)
 {
 
 	*pe = 0;
@@ -900,8 +900,8 @@ bool circleVerify(std::vector<double>x, std::vector<double>y, int N, std::vector
 		*/
 
 		//first compute circular points' normals using the contour method
-		std::vector<Point2f> DT;
-		std::vector<Point2f> D1(N), D2(N);
+		std::vector<cv::Point2f> DT;
+		std::vector<cv::Point2f> D1(N), D2(N);
 		for (int j = 0; j < N - 1; j++)
 		{   // differences between two consecutive points
 			float L = sqrt(pow(x[j] - x[j + 1], 2) + pow(y[j] - y[j + 1], 2));
@@ -911,13 +911,13 @@ bool circleVerify(std::vector<double>x, std::vector<double>y, int N, std::vector
 			D2[j + 1].y = (y[j] - y[j + 1]) / L;
 		}//endfor
 		float LL = sqrt(pow(x.back() - x.front(), 2) + pow(y.back() - y.front(), 2));
-		Point2f end2start;
+		cv::Point2f end2start;
 		end2start.x = (x.back() - x.front()) / LL;
 		end2start.y = (y.back() - y.front()) / LL;
 		D1.push_back(end2start);
 		D2.front() = end2start;
 		//D=D1+D2 Normal
-		std::vector<Point2f> D(N), Nom(N);
+		std::vector<cv::Point2f> D(N), Nom(N);
 		for (int i = 0; i < N; i++)
 		{
 			D[i].x = D1[i].x + D2[i].x;
@@ -941,7 +941,7 @@ bool circleVerify(std::vector<double>x, std::vector<double>y, int N, std::vector
 			{
 				
 				float theta = atan2(dy, dx);
-				Point2f circleNormal = Point2f(cos(theta), sin(theta));
+				cv::Point2f circleNormal = cv::Point2f(cos(theta), sin(theta));
 	
 				float cosPtCirNormal2 = (Nom[i].x * circleNormal.x + Nom[i].y * circleNormal.y);
 				if (abs(cosPtCirNormal2) >= cos(22.5 / 180 * CV_PI))// angle<=22.5°remember float calculations
@@ -974,7 +974,7 @@ struct Circles {
 	double xc, yc, r, inlierRatio;
 };
 
-std::vector<Circles> circleFitGroupedArcs(std::vector<std::vector<Point>> groupedArcs, std::vector<std::vector<Point>> groupedArcsThreePt)
+std::vector<Circles> circleFitGroupedArcs(std::vector<std::vector<cv::Point>> groupedArcs, std::vector<std::vector<cv::Point>> groupedArcsThreePt)
 {
 	
 
@@ -983,7 +983,7 @@ std::vector<Circles> circleFitGroupedArcs(std::vector<std::vector<Point>> groupe
 	{
 		Circles fitCircle;
 		std::vector<double> X, Y;// point coordinates
-		std::vector<Point> stEdMid;// arcs start, mid and end points;
+		std::vector<cv::Point> stEdMid;// arcs start, mid and end points;
 		stEdMid = groupedArcsThreePt[i];
 		
 		for (int j = 0; j < groupedArcs[i].size(); j++)
@@ -1013,7 +1013,7 @@ std::vector<Circles> circleFitGroupedArcs(std::vector<std::vector<Point>> groupe
 }
 
 /*------------fit circles using closed arcs---------*/
-std::vector<Circles> circleFitClosedArcs(std::vector<std::vector<Point>> closedArcs)
+std::vector<Circles> circleFitClosedArcs(std::vector<std::vector<cv::Point>> closedArcs)
 {
 	
 
@@ -1022,7 +1022,7 @@ std::vector<Circles> circleFitClosedArcs(std::vector<std::vector<Point>> closedA
 	{
 		Circles fitCircle;
 		std::vector<double> X, Y;
-		std::vector<Point> threePt;
+		std::vector<cv::Point> threePt;
 		
 		for (int j = 0; j < closedArcs[i].size(); j++)
 		{	/* or for (auto j = groupedArcs[i].begin(); j != groupedArcs[i].end(); j++)*/
@@ -1100,9 +1100,9 @@ std::vector<Circles> clusterCircles(std::vector<Circles> totalCircles)
 
 /*----------verify the circles by inlier ratio----------*/
 std::vector<Circles> circleEstimateGroupedArcs(
-	std::vector<std::vector<Point>> groupedArcs, 
-	std::vector<Vec3f>recordOR,
-	std::vector<std::vector<Point>> groupedArcsThreePt,
+	std::vector<std::vector<cv::Point>> groupedArcs, 
+	std::vector<cv::Vec3f>recordOR,
+	std::vector<std::vector<cv::Point>> groupedArcsThreePt,
 	float T_inlier,
 	float T_angle
 )
@@ -1114,10 +1114,10 @@ std::vector<Circles> circleEstimateGroupedArcs(
 	{
 		Circles fitCircle;
 		std::vector<double> X, Y;// point coordinates
-		std::vector<Point> stEdMid;// arcs start, mid and end points;
+		std::vector<cv::Point> stEdMid;// arcs start, mid and end points;
 		stEdMid = groupedArcsThreePt[i];
 		double groupedR = recordOR[i][2];
-		Point2f groupedO(recordOR[i][0], recordOR[i][1]);
+		cv::Point2f groupedO(recordOR[i][0], recordOR[i][1]);
 		for (int j = 0; j < groupedArcs[i].size(); j++)
 		{	/* or for (auto j = groupedArcs[i].begin(); j != groupedArcs[i].end(); j++)*/
 			Y.push_back(groupedArcs[i][j].y);// or X.push_back((*j).x)
@@ -1149,11 +1149,11 @@ std::vector<Circles> circleEstimateGroupedArcs(
 
 
 /*------------estimate circles using closed arcs---------*/
-std::vector<Circles> circleEstimateClosedArcs(std::vector<std::vector<Point>> closedArcs, float T_inlier_closed)
+std::vector<Circles> circleEstimateClosedArcs(std::vector<std::vector<cv::Point>> closedArcs, float T_inlier_closed)
 {
 	
 
-	Mat pre = Mat(500, 700, CV_8UC3, Scalar(255, 255, 255));
+	cv::Mat pre = cv::Mat(500, 700, CV_8UC3, cv::Scalar(255, 255, 255));
 	
 
 	std::vector<Circles> addCircles;
@@ -1163,16 +1163,16 @@ std::vector<Circles> circleEstimateClosedArcs(std::vector<std::vector<Point>> cl
 		
 		Circles fitCircle;
 		std::vector<double> X, Y;
-		std::vector<Point> threePt;
+		std::vector<cv::Point> threePt;
 		double closedR;
-		Point2f closedO;
+		cv::Point2f closedO;
 		estimateClosedCenterRadius(closedArcs[i], &closedR, &closedO);// estimate the center and radius
 		std::cout << i << "ClosedCenter: " << closedO.x << " " << closedO.y << std::endl;
 		
 		int r = rand() % 256;
 		int g = rand() % 256;
 		int b = rand() % 256;
-		Scalar colorClosedEdgesPre = Scalar(b, g, r);
+		cv::Scalar colorClosedEdgesPre = cv::Scalar(b, g, r);
 		for (int j = 0; j < closedArcs[i].size(); j++)
 		{	/* or for (auto j = groupedArcs[i].begin(); j != groupedArcs[i].end(); j++)*/
 			Y.push_back(closedArcs[i][j].y);// or X.push_back((*j).x)
@@ -1221,9 +1221,9 @@ std::string to_string(T value)
 
 
 // draw fitted circles
-Mat drawResult(bool onImage, Mat srcImg, std::string srcImgName, std::vector<Circles> circles)
+cv::Mat drawResult(bool onImage, cv::Mat srcImg, std::string srcImgName, std::vector<Circles> circles)
 {
-	Mat colorImage;
+	cv::Mat colorImage;
 	int height = srcImg.rows;
 	int width = srcImg.cols;
 	if (onImage)
@@ -1233,7 +1233,7 @@ Mat drawResult(bool onImage, Mat srcImg, std::string srcImgName, std::vector<Cir
 		
 	}
 	else
-		colorImage = Mat(height, width, CV_8UC3, Scalar(255, 255, 255));
+		colorImage = cv::Mat(height, width, CV_8UC3, cv::Scalar(255, 255, 255));
 
 	
 
@@ -1241,25 +1241,25 @@ Mat drawResult(bool onImage, Mat srcImg, std::string srcImgName, std::vector<Cir
 	for (int i = 0; i < circles.size(); i++)
 	{
 
-		Point2f center;
+		cv::Point2f center;
 		float r;
 		if (circles[i].r < 1)//You can remove very small circles (usually formed by noise)
 		{
-			center = Point2f(circles[i].xc, circles[i].yc);
+			center = cv::Point2f(circles[i].xc, circles[i].yc);
 			r = circles[i].r;
 			continue;
-			circle(colorImage, center, r, Scalar(90, 174, 25), 2, LINE_AA);
+			circle(colorImage, center, r, cv::Scalar(90, 174, 25), 2, cv::LINE_AA);
 		}
 		else {
-			center = Point2f(circles[i].xc, circles[i].yc);
+			center = cv::Point2f(circles[i].xc, circles[i].yc);
 			r = circles[i].r;
-			circle(colorImage, center, r, Scalar(0, 0, 255), 2, LINE_AA);
+			circle(colorImage, center, r, cv::Scalar(0, 0, 255), 2, cv::LINE_AA);
 
 		}
 
 	}
 
-	imwrite(srcImgName, colorImage);
+	cv::imwrite(srcImgName, colorImage);
 	return colorImage;
 }
 
@@ -1299,7 +1299,7 @@ void LoadGT(std::vector<Circles>& gt, const std::string& sGtFileName)
 
 
 /*----------compute precision, recall and F-measure------------*/
-bool TestOverlap(const Mat1b& gt, const Mat1b& test, float th)
+bool TestOverlap(const cv::Mat1b& gt, const cv::Mat1b& test, float th)
 {
 	float fAND = float(countNonZero(gt & test));
 	float fOR = float(countNonZero(gt | test));
@@ -1327,7 +1327,7 @@ struct pre_rec_fmeasure {
 };
 
 
-pre_rec_fmeasure Evaluate(const std::vector<Circles>& ellGT, const std::vector<Circles>& ellTest, const float th_score, const Mat& img)
+pre_rec_fmeasure Evaluate(const std::vector<Circles>& ellGT, const std::vector<Circles>& ellTest, const float th_score, const cv::Mat& img)
 {
 	float threshold_overlap = th_score;
 	//float threshold = 0.95f;
@@ -1335,18 +1335,18 @@ pre_rec_fmeasure Evaluate(const std::vector<Circles>& ellGT, const std::vector<C
 	unsigned sz_gt = ellGT.size();
 	unsigned size_test = ellTest.size();
 
-	unsigned sz_test = unsigned(min(1000, int(size_test)));
+	unsigned sz_test = unsigned(std::min(1000, int(size_test)));
 
-	std::vector<Mat1b> gts(sz_gt);
-	std::vector<Mat1b> tests(sz_test);
+	std::vector<cv::Mat1b> gts(sz_gt);
+	std::vector<cv::Mat1b> tests(sz_test);
 	//绘制每个目标椭圆
 	for (unsigned i = 0; i < sz_gt; ++i)
 	{
 		const Circles& e = ellGT[i];
 
-		Mat1b tmp(img.rows, img.cols, uchar(0));
+		cv::Mat1b tmp(img.rows, img.cols, uchar(0));
 		
-		circle(tmp, Point((int)e.xc, (int)e.yc), (int)e.r, Scalar(255), -1);
+		circle(tmp, cv::Point((int)e.xc, (int)e.yc), (int)e.r, cv::Scalar(255), -1);
 		gts[i] = tmp;
 	}
 	//plot the detected circles
@@ -1354,13 +1354,13 @@ pre_rec_fmeasure Evaluate(const std::vector<Circles>& ellGT, const std::vector<C
 	{
 		const Circles& e = ellTest[i];
 
-		Mat1b tmp(img.rows, img.cols, uchar(0));
-		circle(tmp, Point((int)e.xc, (int)e.yc), (int)e.r, Scalar(255), -1);
+		cv::Mat1b tmp(img.rows, img.cols, uchar(0));
+		circle(tmp, cv::Point((int)e.xc, (int)e.yc), (int)e.r, cv::Scalar(255), -1);
 		
 		tests[i] = tmp;
 	}
 
-	Mat1b overlap(sz_gt, sz_test, uchar(0));
+	cv::Mat1b overlap(sz_gt, sz_test, uchar(0));
 	
 	for (int r = 0; r < overlap.rows; ++r)
 	{

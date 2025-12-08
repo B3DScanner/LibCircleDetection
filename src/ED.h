@@ -58,7 +58,7 @@ struct Chain {
 	int len;                   // # of pixels in the chain
 	int parent;                // Parent of this node (-1 if no parent)
 	int children[2];           // Children of this node (-1 if no children)
-	cv::Point* pixels;         // Pointer to the beginning of the pixels array
+	cv::Point* pixels;         // cv::Pointer to the beginning of the pixels array
 };
 
 class ED {

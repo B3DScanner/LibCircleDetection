@@ -23,7 +23,7 @@
 #include<opencv2/imgproc.hpp>
 #include <filesystem>
 
-using namespace cv;
+//using namespace cv;
 //using namespace std;
 
 
@@ -89,11 +89,11 @@ int main()
 		saveName = dst + std::filesystem::path(file).stem().string() + "_det." + suffix;
 
 	   // Gaussian denoise (optional), we do not use in paper
-		Mat testImgOrigin = imread(file, 1);//0:gray 1:color	
-		Mat testImg = testImgOrigin.clone();
+		cv::Mat testImgOrigin = cv::imread(file, 1);//0:gray 1:color	
+		cv::Mat testImg = testImgOrigin.clone();
 		if (USE_GAUSSIAN) {
-			cvtColor(testImg, testImg, COLOR_BGR2GRAY);
-			GaussianBlur(testImg, testImg, Size(9, 9), 2, 2);
+			cvtColor(testImg, testImg, cv::COLOR_BGR2GRAY);
+			GaussianBlur(testImg, testImg, cv::Size(9, 9), 2, 2);
 			if (STEP_DISPLAY) {
 				cv::imshow("Clone Image", testImg);
 				cv::waitKey();
@@ -106,17 +106,17 @@ int main()
 
 		
 		/*---------Illustration for each step---------*/
-		Mat test1 = Mat(height, width, CV_8UC1, Scalar(255));
-		Mat test2 = Mat(height, width, CV_8UC1, Scalar(255));
-		Mat test3 = Mat(height, width, CV_8UC1, Scalar(255));
-		Mat test4 = Mat(height, width, CV_8UC1, Scalar(255));
-		Mat test5 = Mat(height, width, CV_8UC1, Scalar(255));
-		Mat test6 = Mat(height, width, CV_8UC1, Scalar(255));
-		Mat test7 = Mat(height, width, CV_8UC1, Scalar(255));
-		Mat test8 = Mat(height, width, CV_8UC1, Scalar(255));
-		Mat test9 = Mat(height, width, CV_8UC1, Scalar(255));
-		Mat test10 = Mat(height, width, CV_8UC1, Scalar(255));
-		Mat test11 = Mat(height, width, CV_8UC1, Scalar(255));
+		cv::Mat test1 = cv::Mat(height, width, CV_8UC1, cv::Scalar(255));
+		cv::Mat test2 = cv::Mat(height, width, CV_8UC1, cv::Scalar(255));
+		cv::Mat test3 = cv::Mat(height, width, CV_8UC1, cv::Scalar(255));
+		cv::Mat test4 = cv::Mat(height, width, CV_8UC1, cv::Scalar(255));
+		cv::Mat test5 = cv::Mat(height, width, CV_8UC1, cv::Scalar(255));
+		cv::Mat test6 = cv::Mat(height, width, CV_8UC1, cv::Scalar(255));
+		cv::Mat test7 = cv::Mat(height, width, CV_8UC1, cv::Scalar(255));
+		cv::Mat test8 = cv::Mat(height, width, CV_8UC1, cv::Scalar(255));
+		cv::Mat test9 = cv::Mat(height, width, CV_8UC1, cv::Scalar(255));
+		cv::Mat test10 = cv::Mat(height, width, CV_8UC1, cv::Scalar(255));
+		cv::Mat test11 = cv::Mat(height, width, CV_8UC1, cv::Scalar(255));
 
 
 		// EDPF Parameter-free Edge Segment Detection 
@@ -124,28 +124,28 @@ int main()
 		start = clock();
 		
 		EDPF testEDPF = EDPF(testImg);
-		Mat edgePFImage = testEDPF.getEdgeImage();
-		Mat edge = edgePFImage.clone();
+		cv::Mat edgePFImage = testEDPF.getEdgeImage();
+		cv::Mat edge = edgePFImage.clone();
 		edge = edge * -1 + 255;
 		if (STEP_DISPLAY) {
 			cv::imshow("Edge Image Parameter Free", edge);
 			//imwrite("D:/astudy/dataset/circle/temp/result/edge.jpg", edge);
 			cv::waitKey();
 		}
-		std::vector<std::vector<Point> >EDPFsegments = testEDPF.getSegments();// get edge segments
+		std::vector<std::vector<cv::Point> >EDPFsegments = testEDPF.getSegments();// get edge segments
 
 		if (STEP_DISPLAY) {
 			//plot edge images
-			cvtColor(test10, test10, COLOR_GRAY2BGR);
+			cvtColor(test10, test10, cv::COLOR_GRAY2BGR);
 			for (int es1 = 0; es1 < EDPFsegments.size(); es1++)
 			{
 				int r = rand() % 256;
 				int g = rand() % 256;
 				int b = rand() % 256;
-				Scalar SegEdgesColor = Scalar(b, g, r);
+				cv::Scalar SegEdgesColor = cv::Scalar(b, g, r);
 				for (int es2 = 0; es2 < EDPFsegments[es1].size() - 1; es2++)
 				{
-					cv::line(test10, EDPFsegments[es1][es2], EDPFsegments[es1][es2 + 1], SegEdgesColor, 2);//Scalar(0, 0, 0)
+					cv::line(test10, EDPFsegments[es1][es2], EDPFsegments[es1][es2 + 1], SegEdgesColor, 2);//cv::Scalar(0, 0, 0)
 				}
 			}
 
@@ -156,7 +156,7 @@ int main()
 
 
 		/*--------delete edge segments whose pixel number is less than 16-------------*/
-		std::vector<std::vector<Point>> edgeList;
+		std::vector<std::vector<cv::Point>> edgeList;
 		for (int i = 0; i < EDPFsegments.size(); i++)
 		{
 			if (EDPFsegments[i].size() >= 16)// segments should have at least 16 pixels
@@ -169,14 +169,14 @@ int main()
 		/*----------extract closed edges-------------------*/
 		closedEdgesExtract* closedAndNotClosedEdges;
 		closedAndNotClosedEdges = extractClosedEdges(edgeList);
-		std::vector<std::vector<Point> > closedEdgeList;
+		std::vector<std::vector<cv::Point> > closedEdgeList;
 		closedEdgeList = closedAndNotClosedEdges->closedEdges;
 
 		/*--------approximate edge segments using line segments by method RDP-------*/
-		std::vector<std::vector<Point> > segList;
+		std::vector<std::vector<cv::Point> > segList;
 		for (int s0 = 0; s0 < edgeList.size(); s0++)
 		{
-			std::vector<Point> segTemp;
+			std::vector<cv::Point> segTemp;
 			RamerDouglasPeucker(edgeList[s0], 2.5, segTemp);//3.0
 			segList.push_back(segTemp);
 		}
@@ -186,22 +186,22 @@ int main()
 		newSegEdgeList = rejectSharpTurn(edgeList, segList, test_threshold.sharp_angle);
 		
 		//new seglist and edgelist
-		std::vector<std::vector<Point>> newSegList = newSegEdgeList->new_segList;
-		std::vector<std::vector<Point>> newEdgeList = newSegEdgeList->new_edgeList;
+		std::vector<std::vector<cv::Point>> newSegList = newSegEdgeList->new_segList;
+		std::vector<std::vector<cv::Point>> newEdgeList = newSegEdgeList->new_edgeList;
 
 		if (STEP_DISPLAY) {
 			//plot segLists after sharp turn splitting
-			cvtColor(test2, test2, COLOR_GRAY2BGR);
+			cvtColor(test2, test2, cv::COLOR_GRAY2BGR);
 			for (int j = 0; j < newSegList.size(); j++)
 			{
 				int r = rand() % 256;
 				int g = rand() % 256;
 				int b = rand() % 256;
-				Scalar colorSharpTurn = Scalar(b, g, r);
+				cv::Scalar colorSharpTurn = cv::Scalar(b, g, r);
 
 				for (int jj2 = 0; jj2 < newEdgeList[j].size() - 1; jj2++)
 				{
-					//circle(test2, newSegList[j][jj], 1, Scalar(0, 0, 0), 3);
+					//circle(test2, newSegList[j][jj], 1, cv::Scalar(0, 0, 0), 3);
 					line(test2, newEdgeList[j][jj2], newEdgeList[j][jj2 + 1], colorSharpTurn, 2);
 				}
 
@@ -221,22 +221,22 @@ int main()
 		newSegEdgeListAfterInflexion = detectInflexPt(newEdgeList, newSegList);
 		
 		// new seglist and edgelist
-		std::vector<std::vector<Point>> newSegListAfterInflexion = newSegEdgeListAfterInflexion->new_segList;
-		std::vector<std::vector<Point>> newEdgeListAfterInfexion = newSegEdgeListAfterInflexion->new_edgeList;
+		std::vector<std::vector<cv::Point>> newSegListAfterInflexion = newSegEdgeListAfterInflexion->new_segList;
+		std::vector<std::vector<cv::Point>> newEdgeListAfterInfexion = newSegEdgeListAfterInflexion->new_edgeList;
 
 
 		/*--------delete short edgeLists or near line segments----------*/
-		std::vector<std::vector<Point>>::iterator it = newEdgeListAfterInfexion.begin();
+		std::vector<std::vector<cv::Point>>::iterator it = newEdgeListAfterInfexion.begin();
 		while (it != newEdgeListAfterInfexion.end())
 		{
 			/*compute the line segment generated by the two endpoints of the arc,
 			and then judge the midpoint of the arc if lying on or near the line
 			*/
-			Point edgeSt = Point((*it).front().x, (*it).front().y);
-			Point edgeEd = Point((*it).back().x, (*it).back().y);
+			cv::Point edgeSt = cv::Point((*it).front().x, (*it).front().y);
+			cv::Point edgeEd = cv::Point((*it).back().x, (*it).back().y);
 			int midIndex = (*it).size() / 2;
 
-			Point edgeMid = Point((*it)[midIndex].x, (*it)[midIndex].y);
+			cv::Point edgeMid = cv::Point((*it)[midIndex].x, (*it)[midIndex].y);
 
 			double distStEd = sqrt(pow(edgeSt.x - edgeEd.x, 2) + pow(edgeSt.y - edgeEd.y, 2));
 			double distStMid = sqrt(pow(edgeSt.x - edgeMid.x, 2) + pow(edgeSt.y - edgeMid.y, 2));
@@ -252,16 +252,16 @@ int main()
 		}//endwhile
 
 		if (STEP_DISPLAY) {
-			cvtColor(test11, test11, COLOR_GRAY2BGR);
+			cvtColor(test11, test11, cv::COLOR_GRAY2BGR);
 			for (int j = 0; j < newEdgeListAfterInfexion.size(); j++)
 			{
 				int r = rand() % 256;
 				int g = rand() % 256;
 				int b = rand() % 256;
-				Scalar colorAfterDeleteLinePt = Scalar(b, g, r);
+				cv::Scalar colorAfterDeleteLinePt = cv::Scalar(b, g, r);
 				for (int jj2 = 0; jj2 < newEdgeListAfterInfexion[j].size() - 1; jj2++)
 				{
-					//circle(test2, newSegList[j][jj], 1, Scalar(0, 0, 0), 3);
+					//circle(test2, newSegList[j][jj], 1, cv::Scalar(0, 0, 0), 3);
 					line(test11, newEdgeListAfterInfexion[j][jj2], newEdgeListAfterInfexion[j][jj2 + 1], colorAfterDeleteLinePt, 2);
 				}
 			}
@@ -275,23 +275,23 @@ int main()
 		/*-----extract closed edgeLists and not closed edgeLists after inflexion point operation------*/
 		closedEdgesExtract* closedAndNotClosedEdges1;
 		closedAndNotClosedEdges1 = extractClosedEdges(newEdgeListAfterInfexion);
-		std::vector<std::vector<Point> > closedEdgeList1;
-		std::vector<std::vector<Point> > notclosedEdgeList1;
+		std::vector<std::vector<cv::Point> > closedEdgeList1;
+		std::vector<std::vector<cv::Point> > notclosedEdgeList1;
 		closedEdgeList1 = closedAndNotClosedEdges1->closedEdges;
 		notclosedEdgeList1 = closedAndNotClosedEdges1->notClosedEdges;
 
 		if (STEP_DISPLAY) {
 			//plot closed edgeLists
-			cvtColor(test4, test4, COLOR_GRAY2BGR);
+			cvtColor(test4, test4, cv::COLOR_GRAY2BGR);
 			for (int j = 0; j < closedEdgeList1.size(); j++)
 			{
 				int r = rand() % 256;
 				int g = rand() % 256;
 				int b = rand() % 256;
-				Scalar colorClosedEdges = Scalar(b, g, r);
+				cv::Scalar colorClosedEdges = cv::Scalar(b, g, r);
 				for (int jj = 0; jj < closedEdgeList1[j].size() - 1; jj++)
 				{
-					//circle(test4, newSegListAfterInflexion[j][jj], 1, Scalar(0, 0, 0), 3);
+					//circle(test4, newSegListAfterInflexion[j][jj], 1, cv::Scalar(0, 0, 0), 3);
 					cv::line(test4, closedEdgeList1[j][jj], closedEdgeList1[j][jj + 1], colorClosedEdges, 2);
 				}
 				//imshow("After infexion point remove", test2);
@@ -303,13 +303,13 @@ int main()
 		//imwrite("closedEdges2.jpg", test4);
 
 		/*----------sort notclosedEdgeList for grouping-------------*/
-		std::vector<std::vector<Point>> sortedEdgeList = sortEdgeList(notclosedEdgeList1);
+		std::vector<std::vector<cv::Point>> sortedEdgeList = sortEdgeList(notclosedEdgeList1);
 
 		/*--------------group sortededgeList---------------*/
 		groupArcs* arcs = coCircleGroupArcs(sortedEdgeList, test_threshold.T_o, test_threshold.T_r);
-		std::vector<std::vector<Point> > groupedArcs = arcs->arcsFromSameCircles;
-		std::vector<std::vector<Point> > groupedArcsThreePt = arcs->arcsStartMidEnd;
-		std::vector<Vec3f>  groupedOR = arcs->recordOR;
+		std::vector<std::vector<cv::Point> > groupedArcs = arcs->arcsFromSameCircles;
+		std::vector<std::vector<cv::Point> > groupedArcsThreePt = arcs->arcsStartMidEnd;
+		std::vector<cv::Vec3f>  groupedOR = arcs->recordOR;
 
 
 		/*--------circle verification using estimated center and radius parameters*/
@@ -347,7 +347,7 @@ int main()
 		//finish = clock();
 		timeSum += ((float)(finish - start) / CLOCKS_PER_SEC);
 		//draw fit circles after clustering
-		Mat detectCircles = drawResult(true, testImgOrigin, saveName, preCircles);//totalCircles preCircles
+		cv::Mat detectCircles = drawResult(true, testImgOrigin, saveName, preCircles);//totalCircles preCircles
 	//}//endfor    run 100 times and then calculate the average
 
 
@@ -366,7 +366,7 @@ int main()
 	float aveTime = timeSum / Filenames.size();
 	float aveFmea = 2 * avePre * aveRec / (avePre + aveRec);
 	std::cout << "Pre Rec Fmea Time: " << avePre << " " << aveRec << " " << aveFmea << " " << aveTime << std::endl;
-	waitKey(0);
+	cv::waitKey(0);
 
 	return 0;
 }

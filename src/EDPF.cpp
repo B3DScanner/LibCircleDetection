@@ -1,14 +1,14 @@
 #include "EDPF.h"
 
-using namespace cv;
+//using namespace cv;
 //using namespace std;
 
-EDPF::EDPF(Mat srcImage)
+EDPF::EDPF(cv::Mat srcImage)
 	:ED(srcImage, PREWITT_OPERATOR, 11, 3)
 {
 	// Validate Edge Segments
 	sigma /= 2.5;
-	GaussianBlur(srcImage, smoothImage, Size(), sigma); // calculate kernel from sigma
+	GaussianBlur(srcImage, smoothImage, cv::Size(), sigma); // calculate kernel from sigma
 
 	validateEdgeSegments();
 }
@@ -18,7 +18,7 @@ EDPF::EDPF(ED obj)
 {
 	// Validate Edge Segments
 	sigma /= 1.5;//
-	GaussianBlur(srcImage, smoothImage, Size(), sigma); // calculate kernel from sigma
+	GaussianBlur(srcImage, smoothImage, cv::Size(), sigma); // calculate kernel from sigma
 
 	validateEdgeSegments();
 }
@@ -185,8 +185,8 @@ void EDPF::TestSegment(int i, int index1, int index2)
 // 
 void EDPF::ExtractNewSegments()
 {
-	//std::vector<Point> *segments = &segmentPoints[segmentNos];
-	std::vector< std::vector<Point> > validSegments;
+	//std::vector<cv::Point> *segments = &segmentPoints[segmentNos];
+	std::vector< std::vector<cv::Point> > validSegments;
 	int noSegments = 0;
 
 	for (int i = 0; i < segmentNos; i++) {
@@ -215,8 +215,8 @@ void EDPF::ExtractNewSegments()
 				// A new segment. Accepted only only long enough (whatever that means)
 				//segments[noSegments].pixels = &map->segments[i].pixels[start];
 				//segments[noSegments].noPixels = len;
-				validSegments.push_back(std::vector<Point>());
-				std::vector<Point> subVec(&segmentPoints[i][start], &segmentPoints[i][end - 1]);
+				validSegments.push_back(std::vector<cv::Point>());
+				std::vector<cv::Point> subVec(&segmentPoints[i][start], &segmentPoints[i][end - 1]);
 				validSegments[noSegments] = subVec;
 				noSegments++;
 			} //end-else

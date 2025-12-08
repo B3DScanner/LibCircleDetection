@@ -1,10 +1,10 @@
 #include "EDColor.h"
 #include "ED.h"
 
-using namespace cv;
+//using namespace cv;
 //using namespace std;
 
-EDColor::EDColor(Mat srcImage, int gradThresh, int anchor_thresh, double sigma, bool validateSegments)
+EDColor::EDColor(cv::Mat srcImage, int gradThresh, int anchor_thresh, double sigma, bool validateSegments)
 {
 	inputImage = srcImage.clone();
 
@@ -19,7 +19,7 @@ EDColor::EDColor(Mat srcImage, int gradThresh, int anchor_thresh, double sigma, 
 	}
 
 	// split channels (OpenCV uses BGR)
-	Mat bgr[3];
+	cv::Mat bgr[3];
 	split(srcImage, bgr);
 	blueImg = bgr[0].data;
 	greenImg = bgr[1].data;
@@ -302,15 +302,15 @@ void EDColor::ComputeGradientMapByDiZenzo()
 
 void EDColor::smoothChannel(uchar* src, uchar* smooth, double sigma)
 {
-	Mat srcImage = Mat(height, width, CV_8UC1, src);
-	Mat smoothImage = Mat(height, width, CV_8UC1, smooth);
+	cv::Mat srcImage = cv::Mat(height, width, CV_8UC1, src);
+	cv::Mat smoothImage = cv::Mat(height, width, CV_8UC1, smooth);
 
 	if (sigma == 1.0)
-		GaussianBlur(srcImage, smoothImage, Size(5, 5), 1);
+		GaussianBlur(srcImage, smoothImage, cv::Size(5, 5), 1);
 	else if (sigma == 1.5)
-		GaussianBlur(srcImage, smoothImage, Size(7, 7), 1.5);  // seems to be better?
+		GaussianBlur(srcImage, smoothImage, cv::Size(7, 7), 1.5);  // seems to be better?
 	else
-		GaussianBlur(srcImage, smoothImage, Size(), sigma);
+		GaussianBlur(srcImage, smoothImage, cv::Size(), sigma);
 }
 
 
@@ -365,7 +365,7 @@ void EDColor::validateEdgeSegments()
 		} //end-for
 	} //end-for
 
-	Mat gradImage = Mat(height, width, CV_16SC1, gradImg);
+	cv::Mat gradImage = cv::Mat(height, width, CV_16SC1, gradImg);
 	imwrite("newGrad.pgm", gradImage);
 
 	// Compute probability function H
@@ -462,7 +462,7 @@ void EDColor::testSegment(int i, int index1, int index2)
 // 
 void EDColor::extractNewSegments()
 {
-	std::vector< std::vector<Point> > validSegments;
+	std::vector< std::vector<cv::Point> > validSegments;
 	int noSegments = 0;
 
 	for (int i = 0; i < segments.size(); i++) {
@@ -491,8 +491,8 @@ void EDColor::extractNewSegments()
 				// A new segment. Accepted only only long enough (whatever that means)
 				//segments[noSegments].pixels = &map->segments[i].pixels[start];
 				//segments[noSegments].noPixels = len;
-				validSegments.push_back(std::vector<Point>());
-				std::vector<Point> subVec(&segments[i][start], &segments[i][end - 1]);
+				validSegments.push_back(std::vector<cv::Point>());
+				std::vector<cv::Point> subVec(&segments[i][start], &segments[i][end - 1]);
 				validSegments[noSegments] = subVec;
 				noSegments++;
 			} //end-else

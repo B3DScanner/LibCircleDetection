@@ -2,10 +2,10 @@
 #include "EDColor.h"
 #include <fstream>
 
-using namespace cv;
+//using namespace cv;
 //using namespace std;
 //类ED的构造函数ED
-ED::ED(Mat _srcImage, GradientOperator _op, int _gradThresh, int _anchorThresh, int _scanInterval, int _minPathLen, double _sigma, bool _sumFlag)
+ED::ED(cv::Mat _srcImage, GradientOperator _op, int _gradThresh, int _anchorThresh, int _scanInterval, int _minPathLen, double _sigma, bool _sumFlag)
 {
 	// Check parameters for sanity
 	if (_gradThresh < 1) _gradThresh = 1;
@@ -26,11 +26,11 @@ ED::ED(Mat _srcImage, GradientOperator _op, int _gradThresh, int _anchorThresh, 
 	sumFlag = _sumFlag;
 
 	segmentNos = 0;
-	segmentPoints.push_back(std::vector<Point>()); // create empty vector of points for segments
+	segmentPoints.push_back(std::vector<cv::Point>()); // create empty vector of points for segments
 
-	edgeImage = Mat(height, width, CV_8UC1, Scalar(0)); // initialize edge Image//CV_8UC1:8bites Unsign C1:灰度图，Scalar(0):初始化值
-	smoothImage = Mat(height, width, CV_8UC1);
-	gradImage = Mat(height, width, CV_16SC1); // gradImage contains short values 
+	edgeImage = cv::Mat(height, width, CV_8UC1, cv::Scalar(0)); // initialize edge Image//CV_8UC1:8bites Unsign C1:灰度图，cv::Scalar(0):初始化值
+	smoothImage = cv::Mat(height, width, CV_8UC1);
+	gradImage = cv::Mat(height, width, CV_16SC1); // gradImage contains short values 
 
 	srcImg = srcImage.data;
 
@@ -38,11 +38,11 @@ ED::ED(Mat _srcImage, GradientOperator _op, int _gradThresh, int _anchorThresh, 
 
 	/*------------ SMOOTH THE IMAGE BY A GAUSSIAN KERNEL -------------------*/
 	if (sigma == 1.0)
-		GaussianBlur(srcImage, smoothImage, Size(5, 5), sigma);
+		GaussianBlur(srcImage, smoothImage, cv::Size(5, 5), sigma);
 	else
-		GaussianBlur(srcImage, smoothImage, Size(), sigma); // calculate kernel from sigma
+		GaussianBlur(srcImage, smoothImage, cv::Size(), sigma); // calculate kernel from sigma
 
-	// Assign Pointers from Mat's data
+	// Assign cv::Pointers from cv::Mat's data
 	smoothImg = smoothImage.data;
 	gradImg = (short*)gradImage.data;
 	edgeImg = edgeImage.data;
@@ -107,7 +107,7 @@ ED::ED(short* _gradImg, uchar* _dirImg, int _width, int _height, int _gradThresh
 	gradImg = _gradImg;
 	dirImg = _dirImg;
 
-	edgeImage = Mat(height, width, CV_8UC1, Scalar(0)); // initialize edge Image
+	edgeImage = cv::Mat(height, width, CV_8UC1, cv::Scalar(0)); // initialize edge Image
 
 	edgeImg = edgeImage.data;
 
@@ -168,7 +168,7 @@ ED::ED(short* _gradImg, uchar* _dirImg, int _width, int _height, int _gradThresh
 				edgeImg[i] = ANCHOR_PIXEL;
 				int y = i / width;
 				int x = i % width;
-				anchorPoints.push_back(Point(x, y)); // push validated anchor point to vector
+				anchorPoints.push_back(cv::Point(x, y)); // push validated anchor point to vector
 			}
 
 		anchorNos = anchorPoints.size(); // get # of anchor pixels
@@ -180,7 +180,7 @@ ED::ED(short* _gradImg, uchar* _dirImg, int _width, int _height, int _gradThresh
 	} //end-else
 
 	segmentNos = 0;
-	segmentPoints.push_back(std::vector<Point>()); // create empty vector of points for segments
+	segmentPoints.push_back(std::vector<cv::Point>()); // create empty vector of points for segments
 
 	JoinAnchorPointsUsingSortedAnchors();
 }
@@ -199,16 +199,16 @@ ED::ED()
 }
 
 
-Mat ED::getEdgeImage()
+cv::Mat ED::getEdgeImage()
 {
 	return edgeImage;
 }
 
-Mat ED::getAnchorImage()
+cv::Mat ED::getAnchorImage()
 {
-	Mat anchorImage = Mat(edgeImage.size(), edgeImage.type(), Scalar(0));
+	cv::Mat anchorImage = cv::Mat(edgeImage.size(), edgeImage.type(), cv::Scalar(0));
 
-	std::vector<Point>::iterator it;
+	std::vector<cv::Point>::iterator it;
 
 	for (it = anchorPoints.begin(); it != anchorPoints.end(); it++)
 	{
@@ -219,14 +219,14 @@ Mat ED::getAnchorImage()
 	return anchorImage;
 }
 
-Mat ED::getSmoothImage()
+cv::Mat ED::getSmoothImage()
 {
 	return smoothImage;
 }
 
-Mat ED::getGradImage()
+cv::Mat ED::getGradImage()
 {
-	Mat result8UC1;
+	cv::Mat result8UC1;
 	convertScaleAbs(gradImage, result8UC1);
 
 	return result8UC1;
@@ -242,29 +242,29 @@ int ED::getAnchorNo()
 	return anchorNos;
 }
 
-std::vector<Point> ED::getAnchorPoints()
+std::vector<cv::Point> ED::getAnchorPoints()
 {
 	return anchorPoints;
 }
 
-std::vector<std::vector<Point>> ED::getSegments()
+std::vector<std::vector<cv::Point>> ED::getSegments()
 {
 	return segmentPoints;
 }
 
-std::vector<std::vector<Point>> ED::getSortedSegments()
+std::vector<std::vector<cv::Point>> ED::getSortedSegments()
 {
 	// sort segments from largest to smallest
-	std::sort(segmentPoints.begin(), segmentPoints.end(), [](const std::vector<Point>& a, const std::vector<Point>& b) { return a.size() > b.size(); });
+	std::sort(segmentPoints.begin(), segmentPoints.end(), [](const std::vector<cv::Point>& a, const std::vector<cv::Point>& b) { return a.size() > b.size(); });
 
 	return segmentPoints;
 }
 
-Mat ED::drawParticularSegments(std::vector<int> list)
+cv::Mat ED::drawParticularSegments(std::vector<int> list)
 {
-	Mat segmentsImage = Mat(edgeImage.size(), edgeImage.type(), Scalar(0));
+	cv::Mat segmentsImage = cv::Mat(edgeImage.size(), edgeImage.type(), cv::Scalar(0));
 
-	std::vector<Point>::iterator it;
+	std::vector<cv::Point>::iterator it;
 	std::vector<int>::iterator itInt;
 
 	for (itInt = list.begin(); itInt != list.end(); itInt++)
@@ -381,7 +381,7 @@ void ED::ComputeAnchorPoints()
 				int diff2 = gradImg[i * width + j] - gradImg[i * width + j + 1];
 				if (diff1 >= anchorThresh && diff2 >= anchorThresh) {
 					edgeImg[i * width + j] = ANCHOR_PIXEL;
-					anchorPoints.push_back(Point(j, i));
+					anchorPoints.push_back(cv::Point(j, i));
 				}
 
 			}
@@ -391,7 +391,7 @@ void ED::ComputeAnchorPoints()
 				int diff2 = gradImg[i * width + j] - gradImg[(i + 1) * width + j];
 				if (diff1 >= anchorThresh && diff2 >= anchorThresh) {
 					edgeImg[i * width + j] = ANCHOR_PIXEL;
-					anchorPoints.push_back(Point(j, i));
+					anchorPoints.push_back(cv::Point(j, i));
 				}
 			} // end-else
 		} //end-for-inner
@@ -404,7 +404,7 @@ void ED::JoinAnchorPointsUsingSortedAnchors()
 {
 	int* chainNos = new int[(width + height) * 8];
 
-	Point* pixels = new Point[width * height];
+	cv::Point* pixels = new cv::Point[width * height];
 	StackNode* stack = new StackNode[width * height];
 	Chain* chains = new Chain[width * height];
 
@@ -887,7 +887,7 @@ void ED::JoinAnchorPointsUsingSortedAnchors()
 			} //end-if
 
 			segmentNos++;
-			segmentPoints.push_back(std::vector<Point>()); // create empty vector of points for segments
+			segmentPoints.push_back(std::vector<cv::Point>()); // create empty vector of points for segments
 
 													  // Copy the rest of the long chains here
 			for (int k = 2; k < noChains; k++) {
@@ -944,7 +944,7 @@ void ED::JoinAnchorPointsUsingSortedAnchors()
 
 						chains[chainNo].len = 0;  // Mark as copied
 					} //end-for
-					segmentPoints.push_back(std::vector<Point>()); // create empty vector of points for segments
+					segmentPoints.push_back(std::vector<cv::Point>()); // create empty vector of points for segments
 					segmentNos++;
 				} //end-if          
 			} //end-for
@@ -967,7 +967,7 @@ void ED::JoinAnchorPointsUsingSortedAnchors()
 
 void ED::sortAnchorsByGradValue()
 {
-	auto sortFunc = [&](const Point& a, const Point& b)
+	auto sortFunc = [&](const cv::Point& a, const cv::Point& b)
 	{
 		return gradImg[a.y * width + a.x] > gradImg[b.y * width + b.x];
 	};
@@ -986,13 +986,13 @@ void ED::sortAnchorsByGradValue()
 	myFile.close();
 
 
-	std::vector<Point> temp(anchorNos);
+	std::vector<cv::Point> temp(anchorNos);
 
 	int x, y, i = 0;
 	char c;
 	std::ifstream infile("cords.txt");
 	while (infile >> x >> c >> y && c == ',') {
-		temp[i] = Point(x, y);
+		temp[i] = cv::Point(x, y);
 		i++;
 	}
 

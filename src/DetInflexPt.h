@@ -7,22 +7,22 @@
 #include<algorithm>
 
 //using namespace std;
-using namespace cv;
+//using namespace cv;
 struct InflexionPt
 {
-	std::vector<std::vector<Point> > new_edgeList;
-	std::vector<std::vector<Point> > new_segList;
+	std::vector<std::vector<cv::Point> > new_edgeList;
+	std::vector<std::vector<cv::Point> > new_segList;
 };
 
-InflexionPt* detectInflexPt(std::vector<std::vector<Point>> edgeList, std::vector<std::vector<Point> >segList)
+InflexionPt* detectInflexPt(std::vector<std::vector<cv::Point>> edgeList, std::vector<std::vector<cv::Point> >segList)
 {
 	InflexionPt* result = new InflexionPt;
 	int no_seg_grps = segList.size();
 
-	std::vector<std::vector<Point>> tempSegList, tempEdgeList;
+	std::vector<std::vector<cv::Point>> tempSegList, tempEdgeList;
 	for (int ii = 0; ii < no_seg_grps; ii++)
 	{
-		std::vector<Point> present_seg_grp;
+		std::vector<cv::Point> present_seg_grp;
 		std::vector<int> break_at_seg, break_points_y_x_list;
 		present_seg_grp = segList[ii];
 		if (present_seg_grp.size() <= 4)
@@ -258,11 +258,11 @@ InflexionPt* detectInflexPt(std::vector<std::vector<Point>> edgeList, std::vecto
 
 
 			// for segList
-			std::vector<std::vector<Point> >seglist_temp;
+			std::vector<std::vector<cv::Point> >seglist_temp;
 			int k = 0;
 			for (int jj = 0; jj < breakAtSegSize; jj++)
 			{
-				std::vector<Point> seg_temp;
+				std::vector<cv::Point> seg_temp;
 				for (int p = k; p <= break_at_seg[jj]; p++)
 				{
 					seg_temp.push_back(segList[ii][p]);
@@ -270,7 +270,7 @@ InflexionPt* detectInflexPt(std::vector<std::vector<Point>> edgeList, std::vecto
 				seglist_temp.push_back(seg_temp);
 				k = break_at_seg[jj];
 			}
-			std::vector<Point> seg_temp;
+			std::vector<cv::Point> seg_temp;
 			for (int pp = k; pp < segList[ii].size(); pp++)// the final segment
 			{
 				seg_temp.push_back(segList[ii][pp]);
@@ -282,13 +282,13 @@ InflexionPt* detectInflexPt(std::vector<std::vector<Point>> edgeList, std::vecto
 			}//endfor
 
 			// for edgeList
-			std::vector<std::vector<Point> >edgelist_temp;
+			std::vector<std::vector<cv::Point> >edgelist_temp;
 			int k2 = 0;
 			if (!break_points_y_x_list.empty())
 			{
 				for (int jj = 0; jj < break_points_y_x_list.size(); jj++)
 				{
-					std::vector<Point> edge_temp;
+					std::vector<cv::Point> edge_temp;
 					for (int p = k2; p <= break_points_y_x_list[jj]; p++)
 					{
 						edge_temp.push_back(edgeList[ii][p]);
@@ -296,7 +296,7 @@ InflexionPt* detectInflexPt(std::vector<std::vector<Point>> edgeList, std::vecto
 					edgelist_temp.push_back(edge_temp);
 					k2 = break_points_y_x_list[jj];
 				}
-				std::vector<Point> edge_temp2;
+				std::vector<cv::Point> edge_temp2;
 				for (int pp = k2; pp < edgeList[ii].size(); pp++)// the final segment
 				{
 					edge_temp2.push_back(edgeList[ii][pp]);

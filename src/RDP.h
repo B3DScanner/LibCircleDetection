@@ -15,11 +15,11 @@
 #include<opencv2/opencv.hpp>
 
 //using namespace std;
-using namespace cv;
+//using namespace cv;
 
-//typedef std::pair<double, double> Point;//typedef std::pair<double, double> Point;
+//typedef std::pair<double, double> cv::Point;//typedef std::pair<double, double> cv::Point;
 
-double PerpendicularDistance(const Point& pt, const Point& lineStart, const Point& lineEnd)
+double PerpendicularDistance(const cv::Point& pt, const cv::Point& lineStart, const cv::Point& lineEnd)
 {
 	double dx = lineEnd.x - lineStart.x;
 	double dy = lineEnd.y - lineStart.y;
@@ -48,7 +48,7 @@ double PerpendicularDistance(const Point& pt, const Point& lineStart, const Poin
 	return pow(pow(ax, 2.0) + pow(ay, 2.0), 0.5);
 }
 
-void RamerDouglasPeucker(const std::vector<Point>& pointList, double epsilon, std::vector<Point>& out)// const std::vector<Point> &pointList
+void RamerDouglasPeucker(const std::vector<cv::Point>& pointList, double epsilon, std::vector<cv::Point>& out)// const std::vector<cv::Point> &pointList
 {
 	if (pointList.size() < 2)
 		throw std::invalid_argument("Not enough points to simplify");
@@ -71,10 +71,10 @@ void RamerDouglasPeucker(const std::vector<Point>& pointList, double epsilon, st
 	if (dmax > epsilon)
 	{
 		// Recursive call
-		std::vector<Point> recResults1;
-		std::vector<Point> recResults2;
-		std::vector<Point> firstLine(pointList.begin(), pointList.begin() + index + 1);
-		std::vector<Point> lastLine(pointList.begin() + index, pointList.end());
+		std::vector<cv::Point> recResults1;
+		std::vector<cv::Point> recResults2;
+		std::vector<cv::Point> firstLine(pointList.begin(), pointList.begin() + index + 1);
+		std::vector<cv::Point> lastLine(pointList.begin() + index, pointList.end());
 		RamerDouglasPeucker(firstLine, epsilon, recResults1);
 		RamerDouglasPeucker(lastLine, epsilon, recResults2);
 
