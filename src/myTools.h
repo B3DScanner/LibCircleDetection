@@ -19,7 +19,7 @@
 
 //using namespace std;
 //using namespace cv;
-using namespace Eigen;
+//using namespace Eigen;
 
 // extract closed edgeLists and not closed edgeLists
 struct closedEdgesExtract {
