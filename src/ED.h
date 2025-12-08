@@ -102,10 +102,10 @@ private:
 	void ComputeAnchorPoints();
 	void JoinAnchorPointsUsingSortedAnchors();
 	void sortAnchorsByGradValue();
-	int* sortAnchorsByGradValue1();
+	std::vector<int> sortAnchorsByGradValue1();
 
-	static int LongestChain(Chain* chains, int root);
-	static int RetrieveChainNos(Chain* chains, int root, int chainNos[]);
+	static int LongestChain(std::vector<Chain>& chains, int root);
+	static int RetrieveChainNos(std::vector<Chain>& chains, int root, std::vector<int>& chainNos);
 
 	int anchorNos;
 	std::vector<cv::Point> anchorPoints;

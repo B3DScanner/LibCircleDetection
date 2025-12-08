@@ -579,14 +579,15 @@ struct groupArcs {
 };
 
 
-groupArcs* coCircleGroupArcs(std::vector<std::vector<cv::Point>> edgelist, int T_o, int T_r)
+groupArcs coCircleGroupArcs(std::vector<std::vector<cv::Point>> edgelist, int T_o, int T_r)
 {
-	groupArcs* arcs = new groupArcs;
+	groupArcs arcs;
 	
 	// use to empty some edgelist
 	std::vector<cv::Point> vec;
 	cv::Point temp = cv::Point(0, 0);
 	vec.push_back(temp);
+
 	for (int i = 0; i < edgelist.size(); i++)
 	{
 		int leng = edgelist[i].size();
@@ -707,9 +708,9 @@ groupArcs* coCircleGroupArcs(std::vector<std::vector<cv::Point>> edgelist, int T
 
 		// finally detected grouped arcs, three points on it, and recoreded center and radius. 
 		edgelist[i] = vec;
-		arcs->arcsFromSameCircles.push_back(CirPt);
-		arcs->arcsStartMidEnd.push_back(outThreePt);
-		arcs->recordOR.push_back(center_radius_refinement);
+		arcs.arcsFromSameCircles.push_back(CirPt);
+		arcs.arcsStartMidEnd.push_back(outThreePt);
+		arcs.recordOR.push_back(center_radius_refinement);
 	}//endfor outer
 	return arcs;
 }

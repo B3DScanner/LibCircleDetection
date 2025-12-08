@@ -303,10 +303,10 @@ int main()
 		std::vector<std::vector<cv::Point>> sortedEdgeList = sortEdgeList(notclosedEdgeList1);
 
 		/*--------------group sortededgeList---------------*/
-		groupArcs* arcs = coCircleGroupArcs(sortedEdgeList, test_threshold.T_o, test_threshold.T_r);
-		std::vector<std::vector<cv::Point> > groupedArcs = arcs->arcsFromSameCircles;
-		std::vector<std::vector<cv::Point> > groupedArcsThreePt = arcs->arcsStartMidEnd;
-		std::vector<cv::Vec3f>  groupedOR = arcs->recordOR;
+		auto arcs = coCircleGroupArcs(sortedEdgeList, test_threshold.T_o, test_threshold.T_r);
+		const auto& groupedArcs = arcs.arcsFromSameCircles;
+		const auto& groupedArcsThreePt = arcs.arcsStartMidEnd;
+		std::vector<cv::Vec3f>  groupedOR = arcs.recordOR;
 
 
 		/*--------circle verification using estimated center and radius parameters*/

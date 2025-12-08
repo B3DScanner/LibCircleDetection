@@ -402,14 +402,23 @@ void ED::ComputeAnchorPoints()
 
 void ED::JoinAnchorPointsUsingSortedAnchors()
 {
-	int* chainNos = new int[(width + height) * 8];
+	//int* chainNos = new int[(width + height) * 8];
 
-	cv::Point* pixels = new cv::Point[width * height];
-	StackNode* stack = new StackNode[width * height];
-	Chain* chains = new Chain[width * height];
+	std::vector<int> chainNos((width + height) * 8);
+
+
+
+	//cv::Point* pixels = new cv::Point[width * height];
+	//StackNode* stack = new StackNode[width * height];
+	//Chain* chains = new Chain[width * height];
+
+	std::vector<cv::Point> pixels(width * height);
+	std::vector<StackNode> stack(width * height);
+	std::vector<Chain> chains(width * height);
+
 
 	// sort the anchor points by their gradient value in decreasing order
-	int* A = sortAnchorsByGradValue1();
+	 auto A = sortAnchorsByGradValue1();
 
 	// Now join the anchors starting with the anchor having the greatest gradient value
 	int totalPixels = 0;
@@ -956,13 +965,6 @@ void ED::JoinAnchorPointsUsingSortedAnchors()
 	// pop back last segment from vector
 	// because of one preallocation in the beginning, it will always empty
 	segmentPoints.pop_back();
-
-	// Clean up
-	delete[] A;
-	delete[] chains;
-	delete[] stack;
-	delete[] chainNos;
-	delete[] pixels;
 }
 
 void ED::sortAnchorsByGradValue()
@@ -1000,11 +1002,10 @@ void ED::sortAnchorsByGradValue()
 	*/
 }
 
-int* ED::sortAnchorsByGradValue1()
+std::vector<int> ED::sortAnchorsByGradValue1()
 {
 	int SIZE = 128 * 256;
-	int* C = new int[SIZE];
-	memset(C, 0, sizeof(int) * SIZE);
+	std::vector<int> C(SIZE,0);
 
 	// Count the number of grad values
 	for (int i = 1; i < height - 1; i++) {
@@ -1020,9 +1021,9 @@ int* ED::sortAnchorsByGradValue1()
 	for (int i = 1; i < SIZE; i++) C[i] += C[i - 1];
 
 	int noAnchors = C[SIZE - 1];
-	int* A = new int[noAnchors];
-	memset(A, 0, sizeof(int) * noAnchors);
-
+	//int* A = new int[noAnchors];
+	//memset(A, 0, sizeof(int) * noAnchors);
+	std::vector<int> A(noAnchors,0);
 
 	for (int i = 1; i < height - 1; i++) {
 		for (int j = 1; j < width - 1; j++) {
@@ -1034,7 +1035,7 @@ int* ED::sortAnchorsByGradValue1()
 		} //end-for
 	} //end-for  
 
-	delete[] C;
+
 
 	/*
 	ofstream myFile;
@@ -1049,7 +1050,7 @@ int* ED::sortAnchorsByGradValue1()
 }
 
 
-int ED::LongestChain(Chain* chains, int root) {
+int ED::LongestChain(std::vector<Chain>& chains, int root) {
 	if (root == -1 || chains[root].len == 0) return 0;
 
 	int len0 = 0;
@@ -1073,7 +1074,7 @@ int ED::LongestChain(Chain* chains, int root) {
 	return chains[root].len + max;
 } //end-LongestChain
 
-int ED::RetrieveChainNos(Chain* chains, int root, int chainNos[])
+int ED::RetrieveChainNos(std::vector<Chain>& chains, int root, std::vector<int>& chainNos)
 {
 	int count = 0;
 
