@@ -3,7 +3,7 @@
 #include <fstream>
 
 using namespace cv;
-using namespace std;
+//using namespace std;
 //类ED的构造函数ED
 ED::ED(Mat _srcImage, GradientOperator _op, int _gradThresh, int _anchorThresh, int _scanInterval, int _minPathLen, double _sigma, bool _sumFlag)
 {
@@ -26,7 +26,7 @@ ED::ED(Mat _srcImage, GradientOperator _op, int _gradThresh, int _anchorThresh, 
 	sumFlag = _sumFlag;
 
 	segmentNos = 0;
-	segmentPoints.push_back(vector<Point>()); // create empty vector of points for segments
+	segmentPoints.push_back(std::vector<Point>()); // create empty vector of points for segments
 
 	edgeImage = Mat(height, width, CV_8UC1, Scalar(0)); // initialize edge Image//CV_8UC1:8bites Unsign C1:灰度图，Scalar(0):初始化值
 	smoothImage = Mat(height, width, CV_8UC1);
@@ -180,7 +180,7 @@ ED::ED(short* _gradImg, uchar* _dirImg, int _width, int _height, int _gradThresh
 	} //end-else
 
 	segmentNos = 0;
-	segmentPoints.push_back(vector<Point>()); // create empty vector of points for segments
+	segmentPoints.push_back(std::vector<Point>()); // create empty vector of points for segments
 
 	JoinAnchorPointsUsingSortedAnchors();
 }
@@ -213,7 +213,7 @@ Mat ED::getAnchorImage()
 	for (it = anchorPoints.begin(); it != anchorPoints.end(); it++)
 	{
 		anchorImage.at<uchar>(*it) = 255;
-		//cout << 1 << endl;
+		//std::cout << 1 << std::endl;
 	}
 
 	return anchorImage;
@@ -887,7 +887,7 @@ void ED::JoinAnchorPointsUsingSortedAnchors()
 			} //end-if
 
 			segmentNos++;
-			segmentPoints.push_back(vector<Point>()); // create empty vector of points for segments
+			segmentPoints.push_back(std::vector<Point>()); // create empty vector of points for segments
 
 													  // Copy the rest of the long chains here
 			for (int k = 2; k < noChains; k++) {
@@ -944,7 +944,7 @@ void ED::JoinAnchorPointsUsingSortedAnchors()
 
 						chains[chainNo].len = 0;  // Mark as copied
 					} //end-for
-					segmentPoints.push_back(vector<Point>()); // create empty vector of points for segments
+					segmentPoints.push_back(std::vector<Point>()); // create empty vector of points for segments
 					segmentNos++;
 				} //end-if          
 			} //end-for
@@ -981,12 +981,12 @@ void ED::sortAnchorsByGradValue()
 		int x = anchorPoints[i].x;
 		int y = anchorPoints[i].y;
 
-		myFile << i << ". value: " << gradImg[y*width + x] << "  Cord: (" << x << "," << y << ")" << endl;
+		myFile << i << ". value: " << gradImg[y*width + x] << "  Cord: (" << x << "," << y << ")" << std::endl;
 	}
 	myFile.close();
 
 
-	vector<Point> temp(anchorNos);
+	std::vector<Point> temp(anchorNos);
 
 	int x, y, i = 0;
 	char c;
@@ -1040,7 +1040,7 @@ int* ED::sortAnchorsByGradValue1()
 	ofstream myFile;
 	myFile.open("aNew.txt");
 	for (int i = 0; i < noAnchors; i++)
-		myFile << A[i] << endl;
+		myFile << A[i] << std::endl;
 
 	myFile.close(); */
 

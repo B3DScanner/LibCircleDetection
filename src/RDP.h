@@ -14,7 +14,7 @@
 #include <stdexcept>
 #include<opencv2/opencv.hpp>
 
-using namespace std;
+//using namespace std;
 using namespace cv;
 
 //typedef std::pair<double, double> Point;//typedef std::pair<double, double> Point;
@@ -48,10 +48,10 @@ double PerpendicularDistance(const Point& pt, const Point& lineStart, const Poin
 	return pow(pow(ax, 2.0) + pow(ay, 2.0), 0.5);
 }
 
-void RamerDouglasPeucker(const vector<Point>& pointList, double epsilon, vector<Point>& out)// const vector<Point> &pointList
+void RamerDouglasPeucker(const std::vector<Point>& pointList, double epsilon, std::vector<Point>& out)// const std::vector<Point> &pointList
 {
 	if (pointList.size() < 2)
-		throw invalid_argument("Not enough points to simplify");
+		throw std::invalid_argument("Not enough points to simplify");
 
 	// Find the point with the maximum distance from line between start and end
 	double dmax = 0.0;
@@ -71,10 +71,10 @@ void RamerDouglasPeucker(const vector<Point>& pointList, double epsilon, vector<
 	if (dmax > epsilon)
 	{
 		// Recursive call
-		vector<Point> recResults1;
-		vector<Point> recResults2;
-		vector<Point> firstLine(pointList.begin(), pointList.begin() + index + 1);
-		vector<Point> lastLine(pointList.begin() + index, pointList.end());
+		std::vector<Point> recResults1;
+		std::vector<Point> recResults2;
+		std::vector<Point> firstLine(pointList.begin(), pointList.begin() + index + 1);
+		std::vector<Point> lastLine(pointList.begin() + index, pointList.end());
 		RamerDouglasPeucker(firstLine, epsilon, recResults1);
 		RamerDouglasPeucker(lastLine, epsilon, recResults2);
 
@@ -82,7 +82,7 @@ void RamerDouglasPeucker(const vector<Point>& pointList, double epsilon, vector<
 		out.assign(recResults1.begin(), recResults1.end() - 1);
 		out.insert(out.end(), recResults2.begin(), recResults2.end());
 		if (out.size() < 2)
-			throw runtime_error("Problem assembling output");
+			throw std::runtime_error("Problem assembling output");
 	}
 	else
 	{

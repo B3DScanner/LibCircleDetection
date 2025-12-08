@@ -6,27 +6,27 @@
 4. verify the fitted circles
 5. cluster the final circles
 */
-#include<iostream>
-#include<vector>
-#include<opencv2/opencv.hpp>
-#include<algorithm>
-#include<math.h>
-#include<Eigen/Dense>
-#include<string>
-#include<sstream>
-#include<cmath>
+#include <iostream>
+#include <vector>
+#include <opencv2/opencv.hpp>
+#include <algorithm>
+#include <math.h>
+#include <Eigen/Dense>
+#include <string>
+#include <sstream>
+#include <cmath>
 #include <fstream>
 
-using namespace std;
+//using namespace std;
 using namespace cv;
 using namespace Eigen;
 
 // extract closed edgeLists and not closed edgeLists
 struct closedEdgesExtract {
-	vector<vector<Point> >closedEdges;
-	vector<vector<Point> >notClosedEdges;
+	std::vector<std::vector<Point> >closedEdges;
+	std::vector<std::vector<Point> >notClosedEdges;
 };
-closedEdgesExtract* extractClosedEdges(vector<vector<Point> >edgeList)
+closedEdgesExtract* extractClosedEdges(std::vector<std::vector<Point> >edgeList)
 {
 	closedEdgesExtract* edges = new closedEdgesExtract;
 	for (int i = 0; i < (edgeList).size(); i++)
@@ -54,7 +54,7 @@ bool cmp(const std::vector<Point>& a, const std::vector<Point>& b)
 }//endbool
 
 /*------------sort arcs by their length-------------*/
-std::vector<std::vector<Point>> sortEdgeList(vector<std::vector<Point>> edgelists)
+std::vector<std::vector<Point>> sortEdgeList(std::vector<std::vector<Point>> edgelists)
 {
 	/* sort segments from the longest to the shortest*/
 	std::sort(edgelists.begin(), edgelists.end(), cmp);
@@ -104,7 +104,7 @@ int Sign(float x)
 }
 
 /*-----------calculate circular centers and radii for the two arcs------------*/
-bool twoArcsCenterRadius(vector<Point> A1B1C1, vector<Point> A2B2C2, bool* flag, Vec3f* temp1_center_radius, Vec3f* temp2_center_radius, int T_o, int T_r)
+bool twoArcsCenterRadius(std::vector<Point> A1B1C1, std::vector<Point> A2B2C2, bool* flag, Vec3f* temp1_center_radius, Vec3f* temp2_center_radius, int T_o, int T_r)
 {
 
 	*flag = false;
@@ -243,7 +243,7 @@ bool twoArcsCenterRadius(vector<Point> A1B1C1, vector<Point> A2B2C2, bool* flag,
 
 
 /*---------estimate centers and radius by two grouped arcs------------*/
-bool estimateCenterRadius(vector<Point> A1B1C1, vector<Point> A2B2C2, double* estimateR, Point2f* estimateO)
+bool estimateCenterRadius(std::vector<Point> A1B1C1, std::vector<Point> A2B2C2, double* estimateR, Point2f* estimateO)
 {
 
 	Point A1 = A1B1C1[5];//A1B1C1.front()
@@ -326,7 +326,7 @@ bool estimateCenterRadius(vector<Point> A1B1C1, vector<Point> A2B2C2, double* es
 	comCirCenterRadius(A2, C2, C1, &R_A2C2C1, &O_A2C2C1);
 
 	//using median computes centers and radius
-	vector<double> tempR, tempOX, tempOY;
+	std::vector<double> tempR, tempOX, tempOY;
 	// R 
 	tempR.push_back(R1);
 	tempR.push_back(R2);
@@ -363,7 +363,7 @@ bool estimateCenterRadius(vector<Point> A1B1C1, vector<Point> A2B2C2, double* es
 }
 
 /*---------estimate centers and radius by a single arc------------*/
-bool estimateSingleCenterRadius(vector<Point> A1B1C1, double* estimateR, Point2f* estimateO)
+bool estimateSingleCenterRadius(std::vector<Point> A1B1C1, double* estimateR, Point2f* estimateO)
 {
 	Point A1 = A1B1C1[5];//A1B1C1.front()
 	Point C1 = *(A1B1C1.end() - 6);//A1B1C1.back()
@@ -393,7 +393,7 @@ bool estimateSingleCenterRadius(vector<Point> A1B1C1, double* estimateR, Point2f
 
 
 	// using median computes centers and radius
-	vector<double> tempR, tempOX, tempOY;
+	std::vector<double> tempR, tempOX, tempOY;
 	// R 
 	tempR.push_back(R_A1B1C1);
 	tempR.push_back(R_A1D11C1);
@@ -422,7 +422,7 @@ bool estimateSingleCenterRadius(vector<Point> A1B1C1, double* estimateR, Point2f
 
 
 /*---------estimate centers and radius by a closed circle ------------*/
-bool estimateClosedCenterRadius(vector<Point> A1B1C1, double* estimateR, Point2f* estimateO)
+bool estimateClosedCenterRadius(std::vector<Point> A1B1C1, double* estimateR, Point2f* estimateO)
 {
 	// sample 5pts evenly
 	int ptNum = A1B1C1.size();
@@ -465,7 +465,7 @@ bool estimateClosedCenterRadius(vector<Point> A1B1C1, double* estimateR, Point2f
 	
 
 	// using median computes centers and radius
-	vector<double> tempR, tempOX, tempOY;
+	std::vector<double> tempR, tempOX, tempOY;
 	// R 
 	tempR.push_back(R_ACD);
 	tempR.push_back(R_ACE);
@@ -532,7 +532,7 @@ Eigen::MatrixXd pinv_eigen_based(Eigen::MatrixXd& origin, const float er = 1.e-6
 }
 
 // then compute refinement center and radius parameters
-Vec3d refine_center_radius(vector<Point> circle_pt, Vec3f center_radius)
+Vec3d refine_center_radius(std::vector<Point> circle_pt, Vec3f center_radius)
 {
 	int pt_num = circle_pt.size();
 	MatrixXd A(pt_num, 3);
@@ -559,18 +559,18 @@ Vec3d refine_center_radius(vector<Point> circle_pt, Vec3f center_radius)
 
 /*--------------- try using co-circle theorem firstly to group arcs----------*/
 struct groupArcs {
-	vector<vector<Point>> arcsFromSameCircles;
-	vector<vector<Point>> arcsStartMidEnd;
-	vector<Vec3f> recordOR;//record the estimated centers and radii
+	std::vector<std::vector<Point>> arcsFromSameCircles;
+	std::vector<std::vector<Point>> arcsStartMidEnd;
+	std::vector<Vec3f> recordOR;//record the estimated centers and radii
 };
 
 
-groupArcs* coCircleGroupArcs(vector<vector<Point>> edgelist, int T_o, int T_r)
+groupArcs* coCircleGroupArcs(std::vector<std::vector<Point>> edgelist, int T_o, int T_r)
 {
 	groupArcs* arcs = new groupArcs;
 	
 	// use to empty some edgelist
-	vector<Point> vec;
+	std::vector<Point> vec;
 	Point temp = Point(0, 0);
 	vec.push_back(temp);
 	for (int i = 0; i < edgelist.size(); i++)
@@ -578,12 +578,12 @@ groupArcs* coCircleGroupArcs(vector<vector<Point>> edgelist, int T_o, int T_r)
 		int leng = edgelist[i].size();
 		if (leng == 1) { continue; }
 		// put edge1 into outEdgeList first
-		vector<Point> CirPt;
-		vector<vector<Point> >outEdgeList;
+		std::vector<Point> CirPt;
+		std::vector<std::vector<Point> >outEdgeList;
 		outEdgeList.push_back(edgelist[i]);
 	
 		Vec3f groupedOR;
-		vector<Point> outThreePt;
+		std::vector<Point> outThreePt;
 		Point start = edgelist[i].front();
 		Point end = edgelist[i].back();
 		Point mid = edgelist[i][leng / 2];
@@ -591,7 +591,7 @@ groupArcs* coCircleGroupArcs(vector<vector<Point>> edgelist, int T_o, int T_r)
 		outThreePt.push_back(end);
 		outThreePt.push_back(mid);
 		
-		vector<Vec3f> CenterRadius;// record center and radius for every paired arcs, used for further radii and center estimation 
+		std::vector<Vec3f> CenterRadius;// record center and radius for every paired arcs, used for further radii and center estimation 
 		//iterate to find the grouping arcs
 		for (int j = 0; j < edgelist.size(); j++)
 		{
@@ -655,9 +655,9 @@ groupArcs* coCircleGroupArcs(vector<vector<Point>> edgelist, int T_o, int T_r)
 		//estimate center and radius for three or more arcs
 		if (outEdgeList.size() > 2)// edgelist[i] finds more than two arcs, then take the median as estimated value
 		{
-			vector<double> temp_r;
-			vector<float> temp_x;
-			vector<float> temp_y;
+			std::vector<double> temp_r;
+			std::vector<float> temp_x;
+			std::vector<float> temp_y;
 			for (int i = 0; i < CenterRadius.size(); i++)
 			{
 				temp_x.push_back(CenterRadius[i][0]);
@@ -706,7 +706,7 @@ groupArcs* coCircleGroupArcs(vector<vector<Point>> edgelist, int T_o, int T_r)
 // The circle equation is of the form: (x-xc)^2 + (y-yc)^2 = r^2
 // Returns true if there is a fit, false in case no circles can be fit
 //
-bool CircleFit(vector<double>x, vector<double>y, int N, vector<Point> stEdMid, double* pxc, double* pyc, double* pr, double* pe, double* angle)
+bool CircleFit(std::vector<double>x, std::vector<double>y, int N, std::vector<Point> stEdMid, double* pxc, double* pyc, double* pr, double* pe, double* angle)
 {
 	//*pe = 0;//precision
 	if (N < 3) return false;
@@ -779,8 +779,8 @@ bool CircleFit(vector<double>x, vector<double>y, int N, vector<Point> stEdMid, d
 	*/
 
 	//first compute circular points' normals using the contour method
-	vector<Point2f> DT;
-	vector<Point2f> D1(N), D2(N);
+	std::vector<Point2f> DT;
+	std::vector<Point2f> D1(N), D2(N);
 	for (int j = 0; j < N - 1; j++)
 	{   // differences between two consecutive points
 		float L = sqrt(pow(x[j] - x[j + 1], 2) + pow(y[j] - y[j + 1], 2));
@@ -796,7 +796,7 @@ bool CircleFit(vector<double>x, vector<double>y, int N, vector<Point> stEdMid, d
 	D1.push_back(end2start);
 	D2.front() = end2start;
 	//D=D1+D2 Normal
-	vector<Point2f> D(N), Nom(N);
+	std::vector<Point2f> D(N), Nom(N);
 	for (int i = 0; i < N; i++)
 	{
 		D[i].x = D1[i].x + D2[i].x;
@@ -878,7 +878,7 @@ bool CircleFit(vector<double>x, vector<double>y, int N, vector<Point> stEdMid, d
 
 
 /*----------circle verification using estimated centers and radii-------------------*/
-bool circleVerify(vector<double>x, vector<double>y, int N, vector<Point> stEdMid, Point2f O, double R, double* pe, double* angle)
+bool circleVerify(std::vector<double>x, std::vector<double>y, int N, std::vector<Point> stEdMid, Point2f O, double R, double* pe, double* angle)
 {
 
 	*pe = 0;
@@ -900,8 +900,8 @@ bool circleVerify(vector<double>x, vector<double>y, int N, vector<Point> stEdMid
 		*/
 
 		//first compute circular points' normals using the contour method
-		vector<Point2f> DT;
-		vector<Point2f> D1(N), D2(N);
+		std::vector<Point2f> DT;
+		std::vector<Point2f> D1(N), D2(N);
 		for (int j = 0; j < N - 1; j++)
 		{   // differences between two consecutive points
 			float L = sqrt(pow(x[j] - x[j + 1], 2) + pow(y[j] - y[j + 1], 2));
@@ -917,7 +917,7 @@ bool circleVerify(vector<double>x, vector<double>y, int N, vector<Point> stEdMid
 		D1.push_back(end2start);
 		D2.front() = end2start;
 		//D=D1+D2 Normal
-		vector<Point2f> D(N), Nom(N);
+		std::vector<Point2f> D(N), Nom(N);
 		for (int i = 0; i < N; i++)
 		{
 			D[i].x = D1[i].x + D2[i].x;
@@ -974,16 +974,16 @@ struct Circles {
 	double xc, yc, r, inlierRatio;
 };
 
-vector<Circles> circleFitGroupedArcs(vector<vector<Point>> groupedArcs, vector<vector<Point>> groupedArcsThreePt)
+std::vector<Circles> circleFitGroupedArcs(std::vector<std::vector<Point>> groupedArcs, std::vector<std::vector<Point>> groupedArcsThreePt)
 {
 	
 
-	vector<Circles> addCircles;
+	std::vector<Circles> addCircles;
 	for (int i = 0; i < groupedArcs.size(); i++)
 	{
 		Circles fitCircle;
-		vector<double> X, Y;// point coordinates
-		vector<Point> stEdMid;// arcs start, mid and end points;
+		std::vector<double> X, Y;// point coordinates
+		std::vector<Point> stEdMid;// arcs start, mid and end points;
 		stEdMid = groupedArcsThreePt[i];
 		
 		for (int j = 0; j < groupedArcs[i].size(); j++)
@@ -1013,16 +1013,16 @@ vector<Circles> circleFitGroupedArcs(vector<vector<Point>> groupedArcs, vector<v
 }
 
 /*------------fit circles using closed arcs---------*/
-vector<Circles> circleFitClosedArcs(vector<vector<Point>> closedArcs)
+std::vector<Circles> circleFitClosedArcs(std::vector<std::vector<Point>> closedArcs)
 {
 	
 
-	vector<Circles> addCircles;
+	std::vector<Circles> addCircles;
 	for (int i = 0; i < closedArcs.size(); i++)
 	{
 		Circles fitCircle;
-		vector<double> X, Y;
-		vector<Point> threePt;
+		std::vector<double> X, Y;
+		std::vector<Point> threePt;
 		
 		for (int j = 0; j < closedArcs[i].size(); j++)
 		{	/* or for (auto j = groupedArcs[i].begin(); j != groupedArcs[i].end(); j++)*/
@@ -1058,13 +1058,13 @@ bool cmpInlier(const Circles& a, const Circles& b)
 {
 	return a.inlierRatio > b.inlierRatio;
 }//endbool
-vector<Circles> clusterCircles(vector<Circles> totalCircles)
+std::vector<Circles> clusterCircles(std::vector<Circles> totalCircles)
 {
-	vector<Circles> repCircles;// representative circles
+	std::vector<Circles> repCircles;// representative circles
 
 	while (!totalCircles.empty())
 	{
-		vector<Circles> simCircles;// similar circles
+		std::vector<Circles> simCircles;// similar circles
 		
 		Circles circle1 = totalCircles.front();
 		
@@ -1089,7 +1089,7 @@ vector<Circles> clusterCircles(vector<Circles> totalCircles)
 			sort(simCircles.begin(), simCircles.end(), cmpInlier);
 		}// sort default: increase order; cmpInlier is decrease order
 		repCircles.push_back(simCircles.front());
-		cout << "Final inlier ratio" << simCircles.front().inlierRatio << endl;
+		std::cout << "Final inlier ratio" << simCircles.front().inlierRatio << std::endl;
 		
 	}
 	return repCircles;
@@ -1099,16 +1099,22 @@ vector<Circles> clusterCircles(vector<Circles> totalCircles)
 
 
 /*----------verify the circles by inlier ratio----------*/
-vector<Circles> circleEstimateGroupedArcs(vector<vector<Point>> groupedArcs, vector<Vec3f>recordOR, vector<vector<Point>> groupedArcsThreePt, float T_inlier, float T_angle)
+std::vector<Circles> circleEstimateGroupedArcs(
+	std::vector<std::vector<Point>> groupedArcs, 
+	std::vector<Vec3f>recordOR,
+	std::vector<std::vector<Point>> groupedArcsThreePt,
+	float T_inlier,
+	float T_angle
+)
 {
 	
 
-	vector<Circles> addCircles;
+	std::vector<Circles> addCircles;
 	for (int i = 0; i < groupedArcs.size(); i++)
 	{
 		Circles fitCircle;
-		vector<double> X, Y;// point coordinates
-		vector<Point> stEdMid;// arcs start, mid and end points;
+		std::vector<double> X, Y;// point coordinates
+		std::vector<Point> stEdMid;// arcs start, mid and end points;
 		stEdMid = groupedArcsThreePt[i];
 		double groupedR = recordOR[i][2];
 		Point2f groupedO(recordOR[i][0], recordOR[i][1]);
@@ -1143,25 +1149,25 @@ vector<Circles> circleEstimateGroupedArcs(vector<vector<Point>> groupedArcs, vec
 
 
 /*------------estimate circles using closed arcs---------*/
-vector<Circles> circleEstimateClosedArcs(vector<vector<Point>> closedArcs, float T_inlier_closed)
+std::vector<Circles> circleEstimateClosedArcs(std::vector<std::vector<Point>> closedArcs, float T_inlier_closed)
 {
 	
 
 	Mat pre = Mat(500, 700, CV_8UC3, Scalar(255, 255, 255));
 	
 
-	vector<Circles> addCircles;
+	std::vector<Circles> addCircles;
 	
 	for (int i = 0; i < closedArcs.size(); i++)
 	{
 		
 		Circles fitCircle;
-		vector<double> X, Y;
-		vector<Point> threePt;
+		std::vector<double> X, Y;
+		std::vector<Point> threePt;
 		double closedR;
 		Point2f closedO;
 		estimateClosedCenterRadius(closedArcs[i], &closedR, &closedO);// estimate the center and radius
-		cout << i << "ClosedCenter: " << closedO.x << " " << closedO.y << endl;
+		std::cout << i << "ClosedCenter: " << closedO.x << " " << closedO.y << std::endl;
 		
 		int r = rand() % 256;
 		int g = rand() % 256;
@@ -1190,7 +1196,7 @@ vector<Circles> circleEstimateClosedArcs(vector<vector<Point>> closedArcs, float
 			addCircles.push_back(fitCircle);
 			
 		}//endif
-		cout << "Add circle done" << endl;
+		std::cout << "Add circle done" << std::endl;
 	}//endfor
 	return addCircles;
 }
@@ -1198,7 +1204,6 @@ vector<Circles> circleEstimateClosedArcs(vector<vector<Point>> closedArcs, float
 
 /*convert str to num*/
 template <typename T>
-
 std::string to_string(T value)
 
 {
@@ -1216,7 +1221,7 @@ std::string to_string(T value)
 
 
 // draw fitted circles
-Mat drawResult(bool onImage, Mat srcImg, string srcImgName, vector<Circles> circles)
+Mat drawResult(bool onImage, Mat srcImg, std::string srcImgName, std::vector<Circles> circles)
 {
 	Mat colorImage;
 	int height = srcImg.rows;
@@ -1263,12 +1268,12 @@ Mat drawResult(bool onImage, Mat srcImg, string srcImgName, vector<Circles> circ
 
 /*-----------load ground truth txt files-------------*/
 
-void LoadGT(vector<Circles>& gt, const string& sGtFileName)
+void LoadGT(std::vector<Circles>& gt, const std::string& sGtFileName)
 {
-	ifstream in(sGtFileName);
+	std::ifstream in(sGtFileName);
 	if (!in.good())
 	{
-		cout << "Error opening: " << sGtFileName << endl;
+		std::cout << "Error opening: " << sGtFileName << std::endl;
 		return;
 	}
 
@@ -1302,7 +1307,7 @@ bool TestOverlap(const Mat1b& gt, const Mat1b& test, float th)
 	return (fsim >= th);
 }
 
-int Count(const vector<bool> v)
+int Count(const std::vector<bool> v)
 {
 	int counter = 0;
 	for (unsigned i = 0; i < v.size(); ++i)
@@ -1322,7 +1327,7 @@ struct pre_rec_fmeasure {
 };
 
 
-pre_rec_fmeasure Evaluate(const vector<Circles>& ellGT, const vector<Circles>& ellTest, const float th_score, const Mat& img)
+pre_rec_fmeasure Evaluate(const std::vector<Circles>& ellGT, const std::vector<Circles>& ellTest, const float th_score, const Mat& img)
 {
 	float threshold_overlap = th_score;
 	//float threshold = 0.95f;
@@ -1332,8 +1337,8 @@ pre_rec_fmeasure Evaluate(const vector<Circles>& ellGT, const vector<Circles>& e
 
 	unsigned sz_test = unsigned(min(1000, int(size_test)));
 
-	vector<Mat1b> gts(sz_gt);
-	vector<Mat1b> tests(sz_test);
+	std::vector<Mat1b> gts(sz_gt);
+	std::vector<Mat1b> tests(sz_test);
 	//绘制每个目标椭圆
 	for (unsigned i = 0; i < sz_gt; ++i)
 	{
@@ -1367,7 +1372,7 @@ pre_rec_fmeasure Evaluate(const vector<Circles>& ellGT, const vector<Circles>& e
 	}
 
 	int counter = 0;
-	vector<bool> vec_gt(sz_gt, false);
+	std::vector<bool> vec_gt(sz_gt, false);
 	
 	for (unsigned int i = 0; i < sz_test; ++i)
 	{

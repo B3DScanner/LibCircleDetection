@@ -6,30 +6,30 @@
 #include<opencv2/opencv.hpp>
 #include<math.h>
 
-using namespace std;
+//using namespace std;
 using namespace cv;
 
 
 struct sharpTurn
 {
-	vector<vector<Point>> new_edgeList;
-	vector<vector<Point>> new_segList;
+	std::vector<std::vector<Point>> new_edgeList;
+	std::vector<std::vector<Point>> new_segList;
 };
 
 
-sharpTurn* rejectSharpTurn(vector<vector<Point>> edgeList, vector<vector<Point> >segList, float angle)
+sharpTurn* rejectSharpTurn(std::vector<std::vector<Point>> edgeList, std::vector<std::vector<Point> >segList, float angle)
 {
 	sharpTurn* result = new sharpTurn;
 	int no_seg_grps = segList.size();
-	vector<Point>break_points;
+	std::vector<Point>break_points;
 	double Threshold_theta = CV_PI / 2;
-	vector<vector<Point> > new_segList1, new_edgeList1;
+	std::vector<std::vector<Point> > new_segList1, new_edgeList1;
 	
 
 	for (int ii = 0; ii < no_seg_grps; ii++)//no_seg_grps
 	{
 		
-		vector<Point> present_seg_grp = segList[ii];
+		std::vector<Point> present_seg_grp = segList[ii];
 		int no_of_seg = present_seg_grp.size() - 1;//seg_point -1=no_of_seg;
 		// use cos(angle) calculation to determine sharp turn angles
 		Point present_vector = Point(present_seg_grp[1].x - present_seg_grp[0].x, present_seg_grp[1].y - present_seg_grp[0].y);
@@ -63,8 +63,8 @@ sharpTurn* rejectSharpTurn(vector<vector<Point>> edgeList, vector<vector<Point> 
 	int current_break = break_points[index].x;
 	for (int ii = 0; ii < no_seg_grps; ii++)
 	{
-		vector<Point> current_seg = segList[ii];
-		vector<Point> current_edge = edgeList[ii];
+		std::vector<Point> current_seg = segList[ii];
+		std::vector<Point> current_edge = edgeList[ii];
 		if (current_seg.size() > 2)
 		{
 			if (ii == current_break)
@@ -102,7 +102,7 @@ sharpTurn* rejectSharpTurn(vector<vector<Point>> edgeList, vector<vector<Point> 
 
 					if ((last_seg_index - first_seg_index) >= 1)
 					{
-						vector<Point> block_seg, block_edge;
+						std::vector<Point> block_seg, block_edge;
 						for (int kk = first_seg_index; kk <= last_seg_index; kk++)
 						{
 							block_seg.push_back(current_seg[kk]);
@@ -128,7 +128,7 @@ sharpTurn* rejectSharpTurn(vector<vector<Point>> edgeList, vector<vector<Point> 
 				//block after break
 				if ((current_seg.size() - last_seg_index) >= 2)
 				{
-					vector<Point> block1_seg, block1_edge;
+					std::vector<Point> block1_seg, block1_edge;
 					for (int ll = last_seg_index; ll < current_seg.size(); ll++)
 					{
 						

@@ -1,7 +1,7 @@
 #include "EDPF.h"
 
 using namespace cv;
-using namespace std;
+//using namespace std;
 
 EDPF::EDPF(Mat srcImage)
 	:ED(srcImage, PREWITT_OPERATOR, 11, 3)
@@ -185,8 +185,8 @@ void EDPF::TestSegment(int i, int index1, int index2)
 // 
 void EDPF::ExtractNewSegments()
 {
-	//vector<Point> *segments = &segmentPoints[segmentNos];
-	vector< vector<Point> > validSegments;
+	//std::vector<Point> *segments = &segmentPoints[segmentNos];
+	std::vector< std::vector<Point> > validSegments;
 	int noSegments = 0;
 
 	for (int i = 0; i < segmentNos; i++) {
@@ -215,8 +215,8 @@ void EDPF::ExtractNewSegments()
 				// A new segment. Accepted only only long enough (whatever that means)
 				//segments[noSegments].pixels = &map->segments[i].pixels[start];
 				//segments[noSegments].noPixels = len;
-				validSegments.push_back(vector<Point>());
-				vector<Point> subVec(&segmentPoints[i][start], &segmentPoints[i][end - 1]);
+				validSegments.push_back(std::vector<Point>());
+				std::vector<Point> subVec(&segmentPoints[i][start], &segmentPoints[i][end - 1]);
 				validSegments[noSegments] = subVec;
 				noSegments++;
 			} //end-else

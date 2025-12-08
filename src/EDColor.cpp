@@ -2,7 +2,7 @@
 #include "ED.h"
 
 using namespace cv;
-using namespace std;
+//using namespace std;
 
 EDColor::EDColor(Mat srcImage, int gradThresh, int anchor_thresh, double sigma, bool validateSegments)
 {
@@ -462,7 +462,7 @@ void EDColor::testSegment(int i, int index1, int index2)
 // 
 void EDColor::extractNewSegments()
 {
-	vector< vector<Point> > validSegments;
+	std::vector< std::vector<Point> > validSegments;
 	int noSegments = 0;
 
 	for (int i = 0; i < segments.size(); i++) {
@@ -491,8 +491,8 @@ void EDColor::extractNewSegments()
 				// A new segment. Accepted only only long enough (whatever that means)
 				//segments[noSegments].pixels = &map->segments[i].pixels[start];
 				//segments[noSegments].noPixels = len;
-				validSegments.push_back(vector<Point>());
-				vector<Point> subVec(&segments[i][start], &segments[i][end - 1]);
+				validSegments.push_back(std::vector<Point>());
+				std::vector<Point> subVec(&segments[i][start], &segments[i][end - 1]);
 				validSegments[noSegments] = subVec;
 				noSegments++;
 			} //end-else
