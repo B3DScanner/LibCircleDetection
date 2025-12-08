@@ -3,9 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.14.36623.8 d17.14
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CircleDet", "CircleDet.vcxproj", "{62457458-7044-4B65-9A6D-C84C51FA0B88}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CircleDet", "CircleDet\CircleDet.vcxproj", "{62457458-7044-4B65-9A6D-C84C51FA0B88}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "LibCircleDetection", "..\LibCircleDetection\LibCircleDetection.vcxproj", "{7735D0C2-D959-42B0-A9AE-8D9EF5ECA772}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "LibCircleDetection", "LibCircleDetection\LibCircleDetection.vcxproj", "{7735D0C2-D959-42B0-A9AE-8D9EF5ECA772}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

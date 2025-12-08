@@ -27,10 +27,12 @@
 //using namespace cv;
 //using namespace std;
 
+void test2();
+
 
 /*---set thresholds---*/
 // For better performance, you can mainly tune the parameters:  'T_inlier' and 'sharp_angle' 
-typedef struct threshold {
+struct Threshold {
 	int T_l = 20;
 	float T_ratio = 0.001;
 	int T_o = 5;// 5 10 15 20 25
@@ -40,14 +42,17 @@ typedef struct threshold {
 	float T_inlier_closed = 0.5;//0.5,0.6 0.7 0.8,0.9
 	float sharp_angle = 60;//35 40 45 50 55 60 
 
-}T;
+};
 
 int main()
 {
+	test2();
+	return 0;
+
 	using namespace Zikai;
 
 	constexpr bool STEP_DISPLAY = false; // set to ZIKAI_TRUE to display the illustration for each step
-	constexpr bool USE_GAUSSIAN = ZIKAI_TRUE; // set to ZIKAI_TRUE to use Gaussian denoise (we do not use in paper)
+	constexpr bool USE_GAUSSIAN = true; // set to ZIKAI_TRUE to use Gaussian denoise (we do not use in paper)
 
 	// You should create at least two directories: 'Images1' & 'result'
 	// If you have the ground truth, you can create the directory  'GT'
@@ -62,7 +67,7 @@ int main()
 	} catch(...) { }
 
 
-	T test_threshold;
+	Threshold test_threshold;
 
 	test_threshold.T_inlier = 0.3;
 	test_threshold.sharp_angle = 30.0;
@@ -368,5 +373,61 @@ int main()
 	return 0;
 }
 
+void test2()
+{
+	std::string path = "D:/circle_detection/";
+	std::string dst = "D:/circle_detection_result/";
+	try {
+		std::filesystem::create_directory(dst);
+	}
+	catch (...) {}
 
+	Zikai::CircleDetector detector;
+	Zikai::CircleDetectionThreshold threshold;
+	threshold.T_inlier = 0.3;
+	threshold.sharp_angle = 35.0;
 
+	detector.setThreshold(threshold);
+
+	std::vector<std::string> filenames;
+	cv::glob(path + "*.png", filenames, false);
+
+	for (const auto& file : filenames) {
+		
+		cv::String::size_type pos1, pos2;
+		pos1 = file.find("1");
+		pos2 = file.find(".");
+		cv::String prefix = file.substr(pos1 + 2, pos2 - pos1 - 2);
+		cv::String suffix = file.substr(pos2 + 1, pos2 + 3);
+
+		//the name of saved detected images
+		cv::String saveName = dst + std::filesystem::path(file).stem().string() + "_det." + suffix;
+
+		std::filesystem::path debugPath = std::filesystem::path(dst) / (std::filesystem::path(file).stem().string() + "_debug");
+
+		detector.setEnableGaussianBlur(true);
+		detector.setStepDebugDirectory(debugPath);
+		
+		cv::Mat inputImage = cv::imread(file, cv::IMREAD_UNCHANGED);
+		auto detectedCircles = detector.detectCircles(inputImage);
+
+		if(detectedCircles.size() > 0) {
+			std::ostringstream oss;
+
+			oss << "====================================================\n";
+			oss << "File: " << std::filesystem::path(file).filename() << "\n";
+			oss << "Detected circles: " << detectedCircles.size() << "\n";
+			for (size_t i = 0; i < detectedCircles.size(); ++i) {
+				oss << "  Circle " << i + 1 << ": (x: " << detectedCircles[i].xc
+					<< ", y: " << detectedCircles[i].yc
+					<< ", r: " << detectedCircles[i].r
+					<< ", inlierRatio: " << detectedCircles[i].inlierRatio << ")\n";
+			}
+			oss << "====================================================\n";
+			std::cout << oss.str();
+
+		}
+
+	}
+	return;
+}

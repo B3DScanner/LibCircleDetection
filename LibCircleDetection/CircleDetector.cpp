@@ -1,1 +1,358 @@
 #include "CircleDetector.h"
+#include "EDPF.h"
+#include "RDP.h"
+#include "Reject_sharp_turn.h"
+#include "DetInflexPt.h"
+
+std::vector<Zikai::Circles> Zikai::CircleDetector::detectCircles(const cv::Mat& inputImage)
+{
+	if(inputImage.empty())
+	{
+		throw std::invalid_argument("Input image is empty.");
+	}
+
+	if(inputImage.type() != CV_8UC1 && inputImage.type() != CV_8UC3)
+	{
+		throw std::invalid_argument("Input image must be either grayscale (CV_8UC1) or color (CV_8UC3).");
+	}
+
+	stepDebugImages_.clear();
+
+	bool gatherStepImages = !stepDebugDirectory_.empty();
+
+	if(gatherStepImages)
+	{
+		try 
+		{
+			std::filesystem::create_directories(stepDebugDirectory_);
+		} 
+		catch (const std::filesystem::filesystem_error& e) 
+		{
+			//throw std::runtime_error(std::string("Failed to create step debug directory: ") + e.what());
+		}
+
+		gatherStepImages = std::filesystem::exists(stepDebugDirectory_) && std::filesystem::is_directory(stepDebugDirectory_);
+	}
+
+	try {
+		cv::Mat testImg;
+		if(inputImage.type() == CV_8UC3)		
+			cv::cvtColor(inputImage, testImg, cv::COLOR_BGR2GRAY);		
+		else
+			testImg = inputImage.clone();
+		
+
+		const int height = testImg.rows;
+		const int width = testImg.cols;
+
+		if (enableGaussianBlur_) {
+			cv::GaussianBlur(testImg, testImg, cv::Size(9, 9), 2, 2);
+		}
+
+		if (gatherStepImages) {
+			stepDebugImages_.emplace_back(testImg.clone(), "preprocessed_image");
+		}
+
+		// EDPF Parameter-free Edge Segment Detection 
+		clock_t start, finish;
+		start = clock();
+
+		EDPF testEDPF(testImg);
+		if(gatherStepImages) {
+			cv::Mat edgePFImage = testEDPF.getEdgeImage();
+			cv::Mat edgePFDisplay = edgePFImage * -1 + 255;
+			stepDebugImages_.emplace_back(edgePFDisplay, "edge_image_parameter_free");
+		}
+		
+		std::vector<std::vector<cv::Point> >EDPFsegments = testEDPF.getSegments();// get edge segments
+
+		if (gatherStepImages) {
+			//plot edge images
+			cv::Mat tmp;
+			cvtColor(inputImage, tmp, cv::COLOR_GRAY2BGR);
+			for (int es1 = 0; es1 < EDPFsegments.size(); es1++)
+			{
+				int r = rand() % 256;
+				int g = rand() % 256;
+				int b = rand() % 256;
+				cv::Scalar SegEdgesColor = cv::Scalar(b, g, r);
+				for (int es2 = 0; es2 < EDPFsegments[es1].size() - 1; es2++)
+				{
+					cv::line(tmp, EDPFsegments[es1][es2], EDPFsegments[es1][es2 + 1], SegEdgesColor, 2);//cv::Scalar(0, 0, 0)
+				}
+			}
+
+			stepDebugImages_.emplace_back(tmp, "edge_segments_parameter_free");
+
+		}
+		//imwrite("D:/Test/temp/result/edge_segment.jpg", test10);*/
+
+
+		/*--------delete edge segments whose pixel number is less than 16-------------*/
+		std::vector<std::vector<cv::Point>> edgeList;
+		for (int i = 0; i < EDPFsegments.size(); i++)
+		{
+			if (EDPFsegments[i].size() >= 16)// segments should have at least 16 pixels
+			{
+				edgeList.push_back(EDPFsegments[i]);
+			}//endif
+		}//endfor
+
+
+		/*----------extract closed edges-------------------*/
+		//closedEdgesExtract* closedAndNotClosedEdges;
+		auto closedAndNotClosedEdges = extractClosedEdges(edgeList);
+		auto& closedEdgeList = closedAndNotClosedEdges.closedEdges;
+
+		/*--------approximate edge segments using line segments by method RDP-------*/
+		std::vector<std::vector<cv::Point> > segList;
+		for (int s0 = 0; s0 < edgeList.size(); s0++)
+		{
+			std::vector<cv::Point> segTemp;
+			RamerDouglasPeucker(edgeList[s0], 2.5, segTemp);//3.0
+			segList.push_back(segTemp);
+		}
+
+		/*-------------reject sharp turn angles---------------*/
+		auto newSegEdgeList = rejectSharpTurn(edgeList, segList, threshold_.sharp_angle);
+
+		//new seglist and edgelist
+		const auto& newSegList = newSegEdgeList.new_segList;
+		const auto& newEdgeList = newSegEdgeList.new_edgeList;
+
+		if (gatherStepImages) {
+			//plot segLists after sharp turn splitting
+			cv::Mat tmp;
+			cvtColor(inputImage, tmp, cv::COLOR_GRAY2BGR);
+			for (int j = 0; j < newSegList.size(); j++)
+			{
+				int r = rand() % 256;
+				int g = rand() % 256;
+				int b = rand() % 256;
+				cv::Scalar colorSharpTurn = cv::Scalar(b, g, r);
+
+				for (int jj2 = 0; jj2 < newEdgeList[j].size() - 1; jj2++)
+				{
+					//circle(test2, newSegList[j][jj], 1, cv::Scalar(0, 0, 0), 3);
+					line(tmp, newEdgeList[j][jj2], newEdgeList[j][jj2 + 1], colorSharpTurn, 2);
+				}
+
+			}
+
+			stepDebugImages_.emplace_back(tmp, "edge_segments_after_sharp_turn_rejection");
+		}
+
+		//imwrite("sharpTurn.jpg", test2);
+
+
+
+		/*-----------------Detect inflexion points--------------*/
+
+		auto newSegEdgeListAfterInflexion = detectInflexPt(newEdgeList, newSegList);
+
+		// new seglist and edgelist
+		auto& newSegListAfterInflexion = newSegEdgeListAfterInflexion.new_segList;
+		auto& newEdgeListAfterInfexion = newSegEdgeListAfterInflexion.new_edgeList;
+
+
+		/*--------delete short edgeLists or near line segments----------*/
+		std::vector<std::vector<cv::Point>>::iterator it = newEdgeListAfterInfexion.begin();
+		while (it != newEdgeListAfterInfexion.end())
+		{
+			/*compute the line segment generated by the two endpoints of the arc,
+			and then judge the midpoint of the arc if lying on or near the line
+			*/
+			cv::Point edgeSt = cv::Point((*it).front().x, (*it).front().y);
+			cv::Point edgeEd = cv::Point((*it).back().x, (*it).back().y);
+			int midIndex = (*it).size() / 2;
+
+			cv::Point edgeMid = cv::Point((*it)[midIndex].x, (*it)[midIndex].y);
+
+			double distStEd = sqrt(pow(edgeSt.x - edgeEd.x, 2) + pow(edgeSt.y - edgeEd.y, 2));
+			double distStMid = sqrt(pow(edgeSt.x - edgeMid.x, 2) + pow(edgeSt.y - edgeMid.y, 2));
+			double distMidEd = sqrt(pow(edgeEd.x - edgeMid.x, 2) + pow(edgeEd.y - edgeMid.y, 2));
+			double distDifference = abs((distStMid + distMidEd) - distStEd);
+
+
+			if ((*it).size() <= threshold_.T_l || distDifference <= threshold_.T_ratio * (distStMid + distMidEd))// 2 3 fixed number; (*it).size() <=20
+			{
+				it = newEdgeListAfterInfexion.erase(it);
+			}
+			else { it++; }
+		}//endwhile
+
+		if (gatherStepImages) {
+			cv::Mat tmp;
+			cvtColor(inputImage, tmp, cv::COLOR_GRAY2BGR);
+			for (int j = 0; j < newEdgeListAfterInfexion.size(); j++)
+			{
+				int r = rand() % 256;
+				int g = rand() % 256;
+				int b = rand() % 256;
+				cv::Scalar colorAfterDeleteLinePt = cv::Scalar(b, g, r);
+				for (int jj2 = 0; jj2 < newEdgeListAfterInfexion[j].size() - 1; jj2++)
+				{
+					//circle(test2, newSegList[j][jj], 1, cv::Scalar(0, 0, 0), 3);
+					line(tmp, newEdgeListAfterInfexion[j][jj2], newEdgeListAfterInfexion[j][jj2 + 1], colorAfterDeleteLinePt, 2);
+				}
+			}
+
+			stepDebugImages_.emplace_back(tmp, "edge_segments_after_short_and_line_segment_removal");
+		}
+		//imwrite("D:/Test/temp/result/remove_short_line.jpg", test3);
+
+
+		/*-----extract closed edgeLists and not closed edgeLists after inflexion point operation------*/
+
+		auto closedAndNotClosedEdges1 = extractClosedEdges(newEdgeListAfterInfexion);
+		const auto& closedEdgeList1 = closedAndNotClosedEdges1.closedEdges;
+		const auto& notclosedEdgeList1 = closedAndNotClosedEdges1.notClosedEdges;
+
+		if (gatherStepImages) {
+			//plot closed edgeLists
+			cv::Mat tmp;
+			cvtColor(inputImage, tmp, cv::COLOR_GRAY2BGR);
+			for (int j = 0; j < closedEdgeList1.size(); j++)
+			{
+				int r = rand() % 256;
+				int g = rand() % 256;
+				int b = rand() % 256;
+				cv::Scalar colorClosedEdges = cv::Scalar(b, g, r);
+				for (int jj = 0; jj < closedEdgeList1[j].size() - 1; jj++)
+				{
+					//circle(test4, newSegListAfterInflexion[j][jj], 1, cv::Scalar(0, 0, 0), 3);
+					cv::line(tmp, closedEdgeList1[j][jj], closedEdgeList1[j][jj + 1], colorClosedEdges, 2);
+				}
+				//imshow("After infexion point remove", test2);
+				//cv::waitKey()
+			}
+
+			stepDebugImages_.emplace_back(tmp, "closed_edge_segments_after_inflexion_point_detection");
+		}
+		//imwrite("closedEdges2.jpg", test4);
+
+		/*----------sort notclosedEdgeList for grouping-------------*/
+		std::vector<std::vector<cv::Point>> sortedEdgeList = sortEdgeList(notclosedEdgeList1);
+
+		/*--------------group sortededgeList---------------*/
+		auto arcs = coCircleGroupArcs(sortedEdgeList, threshold_.T_o, threshold_.T_r);
+		const auto& groupedArcs = arcs.arcsFromSameCircles;
+		const auto& groupedArcsThreePt = arcs.arcsStartMidEnd;
+		std::vector<cv::Vec3f>  groupedOR = arcs.recordOR;
+
+
+		/*--------circle verification using estimated center and radius parameters*/
+		std::vector<Circles> groupedCircles;// grouped arcs
+		groupedCircles = circleEstimateGroupedArcs(groupedArcs, groupedOR, groupedArcsThreePt, threshold_.T_inlier, threshold_.T_angle);//fit grouped arcs
+
+		// closed arcs
+		for (auto ite = closedEdgeList1.begin(); ite != closedEdgeList1.end(); ite++)
+		{
+			closedEdgeList.push_back(*ite);
+		}//endfor
+
+
+		std::vector<Circles> closedCircles;// closedCircles
+		closedCircles = circleEstimateClosedArcs(closedEdgeList, threshold_.T_inlier_closed);// fit closed edges
+
+
+		//put grouped and closed circles together
+		std::vector<Circles> totalCircles;
+		if (!groupedCircles.empty())
+		{
+			totalCircles = groupedCircles;
+		}
+		if (!closedCircles.empty())
+		{
+			for (auto it = closedCircles.begin(); it != closedCircles.end(); it++)
+			{
+				totalCircles.push_back(*it);
+			}
+		}
+		
+		
+		auto preCircles = clusterCircles(totalCircles);
+		//finish = clock();
+
+
+		if (gatherStepImages) {	
+
+			stepDebugImages_.emplace_back(drawCircles(inputImage, preCircles), "detected_circles_before_clustering");
+
+			saveStepDebugImages();
+		}
+		
+
+		return preCircles;
+
+	}
+	catch (const std::exception& e)
+	{
+		throw std::runtime_error(std::string("Error during circle detection: ") + e.what());
+	}
+}
+
+cv::Mat Zikai::CircleDetector::drawCircles(const cv::Mat& inputImage, const std::vector<Circles>& detectedCircles)
+{
+	if (inputImage.empty())
+	{
+		throw std::invalid_argument("Input image is empty.");
+	}
+
+	if (inputImage.type() != CV_8UC1 && inputImage.type() != CV_8UC3)
+	{
+		throw std::invalid_argument("Input image must be either grayscale (CV_8UC1) or color (CV_8UC3).");
+	}
+
+
+	cv::Mat tmp;
+	if(inputImage.type() == CV_8UC3)		
+		tmp = inputImage.clone();		
+	else
+		cv::cvtColor(inputImage, tmp, cv::COLOR_GRAY2BGR);
+
+	const auto circles = detectedCircles;
+	for (int i = 0; i < circles.size(); i++)
+	{
+
+		cv::Point2f center;
+		float r;
+		if (circles[i].r < 1)//You can remove very small circles (usually formed by noise)
+		{
+			center = cv::Point2f(circles[i].xc, circles[i].yc);
+			r = circles[i].r;
+			continue;
+			circle(tmp, center, r, cv::Scalar(90, 174, 25), 2, cv::LINE_AA);
+		}
+		else {
+			center = cv::Point2f(circles[i].xc, circles[i].yc);
+			r = circles[i].r;
+			circle(tmp, center, r, cv::Scalar(0, 0, 255), 2, cv::LINE_AA);
+
+		}
+
+	}
+
+	return tmp;
+}
+
+void Zikai::CircleDetector::saveStepDebugImages() const
+{
+	bool addZero = stepDebugImages_.size() > 9;
+
+	for(int i = 0; i < stepDebugImages_.size(); i++)
+	{
+		const auto& [image, name] = stepDebugImages_[i];
+		std::string fname = addZero && i < 9 ? "0" + std::to_string(i + 1) : std::to_string(i + 1);
+		fname += "_" + name;
+		std::filesystem::path filePath = stepDebugDirectory_ / (fname + ".png");
+		try 
+		{
+			cv::imwrite(filePath.string(), image);
+		} 
+		catch (const cv::Exception& e) 
+		{
+			//std::cerr << "Failed to save debug image '" << filePath << "': " << e.what() << std::endl;
+		}
+	}
+}

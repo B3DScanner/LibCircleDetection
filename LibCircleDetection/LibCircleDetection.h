@@ -7,3 +7,5 @@
 #include "DetInflexPt.h"
 #include "Reject_sharp_turn.h"
 #include "myTools.h"
+
+#include "CircleDetector.h"
