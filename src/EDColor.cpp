@@ -29,17 +29,17 @@ EDColor::EDColor(cv::Mat srcImage, int gradThresh, int anchor_thresh, double sig
 	width = srcImage.cols;
 
 	// Allocate space for L*a*b color space
-	L_Img = new uchar[width * height];
-	a_Img = new uchar[width * height];
-	b_Img = new uchar[width * height];
+	L_Img.resize(width * height);
+	a_Img.resize(width * height);
+	b_Img.resize(width * height);
 
 	// Convert RGB2Lab
 	MyRGB2LabFast();
 
 	// Allocate space for smooth channels
-	smooth_L = new uchar[width * height];
-	smooth_a = new uchar[width * height];
-	smooth_b = new uchar[width * height];
+	smooth_L.resize(width * height);
+	smooth_a.resize(width * height);
+	smooth_b.resize(width * height);
 
 	// Smooth Channels
 	smoothChannel(L_Img, smooth_L, sigma);
@@ -47,8 +47,8 @@ EDColor::EDColor(cv::Mat srcImage, int gradThresh, int anchor_thresh, double sig
 	smoothChannel(b_Img, smooth_b, sigma);
 
 	// Allocate space for direction and gradient images
-	dirImg = new uchar[width * height];
-	gradImg = new short[width * height];
+	dirImg.resize(width * height);
+	gradImg.resize(width * height);
 
 	// Compute Gradient & Edge Direction Maps
 	ComputeGradientMapByDiZenzo();
@@ -57,7 +57,7 @@ EDColor::EDColor(cv::Mat srcImage, int gradThresh, int anchor_thresh, double sig
 	// Validate edge segments if the flag is set
 	if (validateSegments) {
 		// Get Edge Image using ED 
-		ED edgeObj = ED(gradImg, dirImg, width, height, gradThresh, anchor_thresh, 1, 10, false);
+		ED edgeObj(gradImg.data(), dirImg.data(), width, height, gradThresh, anchor_thresh, 1, 10, false);
 		segments = edgeObj.getSegments();
 		edgeImage = edgeObj.getEdgeImage();
 
@@ -75,7 +75,7 @@ EDColor::EDColor(cv::Mat srcImage, int gradThresh, int anchor_thresh, double sig
 	}
 
 	else {
-		ED edgeObj = ED(gradImg, dirImg, width, height, gradThresh, anchor_thresh);
+		ED edgeObj(gradImg.data(), dirImg.data(), width, height, gradThresh, anchor_thresh);
 		segments = edgeObj.getSegments();
 		edgeImage = edgeObj.getEdgeImage();
 		segmentNo = edgeObj.getSegmentNo();
@@ -83,18 +83,6 @@ EDColor::EDColor(cv::Mat srcImage, int gradThresh, int anchor_thresh, double sig
 
 	// Fix 1 pixel errors in the edge map
 	fixEdgeSegments(segments, 1);
-
-	// clean space
-	delete[] L_Img;
-	delete[] a_Img;
-	delete[] b_Img;
-
-	delete[] smooth_L;
-	delete[] smooth_a;
-	delete[] smooth_b;
-
-	delete[] gradImg;
-	delete[] dirImg;
 }
 
 cv::Mat EDColor::getEdgeImage()
@@ -134,9 +122,9 @@ void EDColor::MyRGB2LabFast()
 	double x, y, z;
 
 	// Space for temp. allocation
-	double* L = new double[width * height];
-	double* a = new double[width * height];
-	double* b = new double[width * height];
+	std::vector<double> L(width * height);
+	std::vector<double> a(width * height);
+	std::vector<double> b(width * height);
 
 	for (int i = 0; i < width * height; i++) {
 		red = redImg[i] / 255.0;
@@ -206,17 +194,11 @@ void EDColor::MyRGB2LabFast()
 
 	scale = 255.0 / (max - min);
 	for (int i = 0; i < width * height; i++) { b_Img[i] = (unsigned char)((b[i] - min) * scale); }
-
-
-	// clean space
-	delete[] L;
-	delete[] a;
-	delete[] b;
 }
 
 void EDColor::ComputeGradientMapByDiZenzo()
 {
-	memset(gradImg, 0, sizeof(short) * width * height);
+	memset(gradImg.data(), 0, sizeof(short) * width * height);
 
 	int max = 0;
 
@@ -300,10 +282,10 @@ void EDColor::ComputeGradientMapByDiZenzo()
 		gradImg[i] = (short)(gradImg[i] * scale);
 }
 
-void EDColor::smoothChannel(uchar* src, uchar* smooth, double sigma)
+void EDColor::smoothChannel(std::vector<uchar>& src, std::vector<uchar>& smooth, double sigma)
 {
-	cv::Mat srcImage = cv::Mat(height, width, CV_8UC1, src);
-	cv::Mat smoothImage = cv::Mat(height, width, CV_8UC1, smooth);
+	const cv::Mat srcImage = cv::Mat(height, width, CV_8UC1, src.data());
+	cv::Mat smoothImage = cv::Mat(height, width, CV_8UC1, smooth.data());
 
 	if (sigma == 1.0)
 		GaussianBlur(srcImage, smoothImage, cv::Size(5, 5), 1);
@@ -320,16 +302,19 @@ void EDColor::smoothChannel(uchar* src, uchar* smooth, double sigma)
 void EDColor::validateEdgeSegments()
 {
 	int maxGradValue = MAX_GRAD_VALUE;
-	H = new double[maxGradValue];
-	memset(H, 0, sizeof(double) * maxGradValue);
+	//H = new double[maxGradValue];
+	//memset(H, 0, sizeof(double) * maxGradValue);
+
+	std::vector<double> H(maxGradValue, 0.0);
 
 	memset(edgeImg, 0, width * height); // clear edge image
 
 	// Compute the gradient
-	memset(gradImg, 0, sizeof(short) * width * height); // reset gradient Image pixels to zero
+	memset(gradImg.data(), 0, sizeof(short) * width * height); // reset gradient Image pixels to zero
 
-	int* grads = new int[maxGradValue];
-	memset(grads, 0, sizeof(int) * maxGradValue);
+	//int* grads = new int[maxGradValue];
+	//memset(grads, 0, sizeof(int) * maxGradValue);
+	std::vector<int> grads(maxGradValue, 0);
 
 	for (int i = 1; i < height - 1; i++) {
 		for (int j = 1; j < width - 1; j++) {
@@ -365,7 +350,7 @@ void EDColor::validateEdgeSegments()
 		} //end-for
 	} //end-for
 
-	cv::Mat gradImage = cv::Mat(height, width, CV_16SC1, gradImg);
+	cv::Mat gradImage = cv::Mat(height, width, CV_16SC1, gradImg.data());
 	imwrite("newGrad.pgm", gradImage);
 
 	// Compute probability function H
@@ -390,9 +375,6 @@ void EDColor::validateEdgeSegments()
 		testSegment(i, 0, segments[i].size() - 1);
 	} //end-for
 
-	// clear space
-	delete[] H;
-	delete[] grads;
 }
 
 

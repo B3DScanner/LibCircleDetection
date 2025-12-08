@@ -180,13 +180,12 @@ int main()
 			segList.push_back(segTemp);
 		}
 
-		/*-------------reject sharp turn angles---------------*/
-		sharpTurn* newSegEdgeList;
-		newSegEdgeList = rejectSharpTurn(edgeList, segList, test_threshold.sharp_angle);
+		/*-------------reject sharp turn angles---------------*/	
+		auto newSegEdgeList = rejectSharpTurn(edgeList, segList, test_threshold.sharp_angle);
 		
 		//new seglist and edgelist
-		std::vector<std::vector<cv::Point>> newSegList = newSegEdgeList->new_segList;
-		std::vector<std::vector<cv::Point>> newEdgeList = newSegEdgeList->new_edgeList;
+		const auto& newSegList  = newSegEdgeList.new_segList;
+		const auto& newEdgeList = newSegEdgeList.new_edgeList;
 
 		if (STEP_DISPLAY) {
 			//plot segLists after sharp turn splitting
@@ -216,12 +215,11 @@ int main()
 
 		/*-----------------Detect inflexion points--------------*/
 
-		InflexionPt* newSegEdgeListAfterInflexion;
-		newSegEdgeListAfterInflexion = detectInflexPt(newEdgeList, newSegList);
+		auto newSegEdgeListAfterInflexion = detectInflexPt(newEdgeList, newSegList);
 		
 		// new seglist and edgelist
-		std::vector<std::vector<cv::Point>> newSegListAfterInflexion = newSegEdgeListAfterInflexion->new_segList;
-		std::vector<std::vector<cv::Point>> newEdgeListAfterInfexion = newSegEdgeListAfterInflexion->new_edgeList;
+		auto& newSegListAfterInflexion = newSegEdgeListAfterInflexion.new_segList;
+		auto& newEdgeListAfterInfexion = newSegEdgeListAfterInflexion.new_edgeList;
 
 
 		/*--------delete short edgeLists or near line segments----------*/

@@ -17,9 +17,12 @@ struct sharpTurn
 };
 
 
-sharpTurn* rejectSharpTurn(std::vector<std::vector<cv::Point>> edgeList, std::vector<std::vector<cv::Point> >segList, float angle)
-{
-	sharpTurn* result = new sharpTurn;
+sharpTurn rejectSharpTurn(
+	const std::vector<std::vector<cv::Point>>& edgeList,
+	const std::vector<std::vector<cv::Point>>& segList,
+	float angle
+) {
+	sharpTurn result;
 	int no_seg_grps = segList.size();
 	std::vector<cv::Point>break_points;
 	double Threshold_theta = CV_PI / 2;
@@ -55,8 +58,8 @@ sharpTurn* rejectSharpTurn(std::vector<std::vector<cv::Point>> edgeList, std::ve
 
 	if (break_points.empty())//no break points
 	{
-		result->new_edgeList = edgeList;
-		result->new_segList = segList;
+		result.new_edgeList = edgeList;
+		result.new_segList = segList;
 		return result;
 	}
 	int index = 0;
@@ -153,8 +156,8 @@ sharpTurn* rejectSharpTurn(std::vector<std::vector<cv::Point>> edgeList, std::ve
 			}//endelse
 		}//endif
 	}//endfor
-	result->new_edgeList = new_edgeList1;
-	result->new_segList = new_segList1;
+	result.new_edgeList = std::move(new_edgeList1);
+	result.new_segList = std::move(new_segList1);
 	return result;
 }
 

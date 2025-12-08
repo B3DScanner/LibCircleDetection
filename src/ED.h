@@ -114,6 +114,7 @@ private:
 	cv::Mat edgeImage;
 	cv::Mat gradImage;
 
+	std::vector<uchar> dirImgVec; 
 	uchar* dirImg; // pointer to direction image data
 	short* gradImg; // pointer to gradient image data
 

@@ -60,16 +60,16 @@ public:
 
 	cv::Mat inputImage;
 private:
-	uchar* L_Img;
-	uchar* a_Img;
-	uchar* b_Img;
+	std::vector<uchar> L_Img;
+	std::vector<uchar> a_Img;
+	std::vector<uchar> b_Img;
 
-	uchar* smooth_L;
-	uchar* smooth_a;
-	uchar* smooth_b;
+	std::vector<uchar> smooth_L;
+	std::vector<uchar> smooth_a;
+	std::vector<uchar> smooth_b;
 
-	uchar* dirImg;
-	short* gradImg;
+	std::vector<uchar> dirImg;
+	std::vector<short> gradImg;
 
 	cv::Mat edgeImage;
 	uchar* edgeImg;
@@ -94,7 +94,7 @@ private:
 
 	void MyRGB2LabFast();
 	void ComputeGradientMapByDiZenzo();
-	void smoothChannel(uchar* src, uchar* smooth, double sigma);
+	void smoothChannel(std::vector<uchar>& src, std::vector<uchar>& smooth, double sigma);
 	void validateEdgeSegments();
 	void testSegment(int i, int index1, int index2);
 	void extractNewSegments();

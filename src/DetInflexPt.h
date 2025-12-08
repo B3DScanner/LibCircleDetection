@@ -14,9 +14,9 @@ struct InflexionPt
 	std::vector<std::vector<cv::Point> > new_segList;
 };
 
-InflexionPt* detectInflexPt(std::vector<std::vector<cv::Point>> edgeList, std::vector<std::vector<cv::Point> >segList)
+InflexionPt detectInflexPt(std::vector<std::vector<cv::Point>> edgeList, std::vector<std::vector<cv::Point> >segList)
 {
-	InflexionPt* result = new InflexionPt;
+	InflexionPt result;
 	int no_seg_grps = segList.size();
 
 	std::vector<std::vector<cv::Point>> tempSegList, tempEdgeList;
@@ -309,8 +309,8 @@ InflexionPt* detectInflexPt(std::vector<std::vector<cv::Point>> edgeList, std::v
 			}//endif
 		}//endelse
 	}
-	result->new_edgeList = tempEdgeList;
-	result->new_segList = tempSegList;
+	result.new_edgeList = std::move(tempEdgeList);
+	result.new_segList = std::move(tempSegList);
 	return result;
 
 }//endfunction

@@ -33,8 +33,8 @@ void EDPF::validateEdgeSegments()
 	divForTestSegment = 2.25; // Some magic number :-)
 	memset(edgeImg, 0, width * height); // clear edge image
 
-	H = new double[MAX_GRAD_VALUE];
-	memset(H, 0, sizeof(double) * MAX_GRAD_VALUE);
+	H.resize(MAX_GRAD_VALUE);
+	memset(H.data(), 0, sizeof(double) * MAX_GRAD_VALUE);
 
 	gradImg = ComputePrewitt3x3();
 
@@ -65,18 +65,14 @@ void EDPF::validateEdgeSegments()
 
 	ExtractNewSegments();
 
-	// clean space		  
-	delete[] H;
-	delete[] gradImg;
 }
 
-short* EDPF::ComputePrewitt3x3()
+std::vector<short> EDPF::ComputePrewitt3x3()
 {
-	short* gradImg = new short[width * height];
-	memset(gradImg, 0, sizeof(short) * width * height);
+	std::vector<short> gradImg(width * height,0);
+	
+	std::vector<int> grads(MAX_GRAD_VALUE, 0);
 
-	int* grads = new int[MAX_GRAD_VALUE];
-	memset(grads, 0, sizeof(int) * MAX_GRAD_VALUE);
 
 	for (int i = 1; i < height - 1; i++) {
 		for (int j = 1; j < width - 1; j++) {
@@ -115,7 +111,6 @@ short* EDPF::ComputePrewitt3x3()
 	for (int i = 0; i < MAX_GRAD_VALUE; i++)
 		H[i] = (double)grads[i] / ((double)size);
 
-	delete[] grads;
 	return gradImg;
 }
 

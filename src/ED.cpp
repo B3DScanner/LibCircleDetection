@@ -47,7 +47,10 @@ ED::ED(cv::Mat _srcImage, GradientOperator _op, int _gradThresh, int _anchorThre
 	gradImg = (short*)gradImage.data;
 	edgeImg = edgeImage.data;
 
-	dirImg = new unsigned char[width * height];
+	//dirImg = new unsigned char[width * height];
+	dirImgVec.clear();
+	dirImgVec.resize(width * height);
+	dirImg = dirImgVec.data();
 
 	/*------------ COMPUTE GRADIENT & EDGE DIRECTION MAPS -------------------*/
 	ComputeGradient();
@@ -58,7 +61,8 @@ ED::ED(cv::Mat _srcImage, GradientOperator _op, int _gradThresh, int _anchorThre
 	/*------------ JOIN ANCHORS -------------------*/
 	JoinAnchorPointsUsingSortedAnchors();
 
-	delete[] dirImg;
+	dirImgVec.clear();
+	dirImg = nullptr;
 }
 
 // This constructor for use of EDLines and EDCircle with ED given as constructor argument
