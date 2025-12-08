@@ -24,6 +24,8 @@
 //using namespace cv;
 //using namespace Eigen;
 
+namespace Zikai{
+
 // extract closed edgeLists and not closed edgeLists
 struct closedEdgesExtract {
 	std::vector<std::vector<cv::Point> >closedEdges;
@@ -42,8 +44,8 @@ closedEdgesExtract extractClosedEdges(const std::vector<std::vector<cv::Point>>&
 	edges.reserve(edgeList.size());
 	for (int i = 0; i < (edgeList).size(); i++)
 	{
-		const auto st = edgeList[i].front();
-		const auto ed = edgeList[i].back();
+		const auto& st = edgeList[i].front();
+		const auto& ed = edgeList[i].back();
 
 		double dist = sqrt(pow(st.x - ed.x, 2) + pow(st.y - ed.y, 2));
 		if (dist <= 3)
@@ -102,7 +104,7 @@ bool comCirCenterRadius(cv::Point A, cv::Point B, cv::Point C, double* R, cv::Po
 	double c12 = pow(C.y, 2) + pow(C.x, 2) - pow(B.y, 2) - pow(B.x, 2);
 	(*O).x = (a11 * c12 - a12 * c11) / (a11 * b12 - a12 * b11);
 	(*O).y = (c11 * b12 - c12 * b11) / (a11 * b12 - a12 * b11);
-	return true;
+	return ZIKAI_TRUE;
 
 }
 
@@ -238,7 +240,7 @@ bool twoArcsCenterRadius(const std::vector<cv::Point>& A1B1C1, const std::vector
 				
 				if (edgeInlier >= 0.2)//0.4
 				{
-					flag = true;
+					flag = ZIKAI_TRUE;
 					temp1_center_radius[0] = O1.x;
 					temp1_center_radius[1] = O1.y;
 					temp1_center_radius[2] = R1;
@@ -251,7 +253,7 @@ bool twoArcsCenterRadius(const std::vector<cv::Point>& A1B1C1, const std::vector
 		}
 	}
 
-	return true;
+	return ZIKAI_TRUE;
 
 }
 
@@ -372,7 +374,7 @@ bool estimateCenterRadius(const std::vector<cv::Point>& A1B1C1, const std::vecto
 	sort(tempOY.begin(), tempOY.end());
 	double estimateOY = (tempOY[2] + tempOY[3]) / 2.0;
 	estimateO = cv::Point2f(estimateOX, estimateOY);
-	return true;
+	return ZIKAI_TRUE;
 
 }
 
@@ -430,7 +432,7 @@ bool estimateSingleCenterRadius(const std::vector<cv::Point>& A1B1C1, double& es
 	sort(tempOY.begin(), tempOY.end());
 	double estimateOY = tempOY[1];
 	estimateO = cv::Point2f(estimateOX, estimateOY);
-	return true;
+	return ZIKAI_TRUE;
 
 }
 
@@ -511,7 +513,7 @@ bool estimateClosedCenterRadius(std::vector<cv::Point> A1B1C1, double* estimateR
 	double estimateOY = tempOY[2];
 	*estimateO = cv::Point2f(estimateOX, estimateOY);
 	
-	return true;
+	return ZIKAI_TRUE;
 
 }
 
@@ -719,7 +721,7 @@ groupArcs coCircleGroupArcs(std::vector<std::vector<cv::Point>> edgelist, int T_
 /*----------circle fitting and verification-------------------*/
 // Fits a circle to a given set of points. There must be at least 2 points
 // The circle equation is of the form: (x-xc)^2 + (y-yc)^2 = r^2
-// Returns true if there is a fit, false in case no circles can be fit
+// Returns ZIKAI_TRUE if there is a fit, false in case no circles can be fit
 //
 bool CircleFit(const std::vector<double>& x, const std::vector<double>& y, int N, const std::vector<cv::Point>& stEdMid, double pxc, double pyc, double pr, double pe, double angle)
 {
@@ -781,7 +783,7 @@ bool CircleFit(const std::vector<double>& x, const std::vector<double>& y, int N
 
 	
 	pr = R;
-	pe = 0;//*pe is the true MSE
+	pe = 0;//*pe is the ZIKAI_TRUE MSE
 	angle = 0;
 
 
@@ -884,7 +886,7 @@ bool CircleFit(const std::vector<double>& x, const std::vector<double>& y, int N
 	angle = spanAngle;
 	//}//endif
 
-	return true;
+	return ZIKAI_TRUE;
 }
 
 
@@ -980,7 +982,7 @@ bool circleVerify(const std::vector<double>& x, const std::vector<double>& y, in
 		pe = inlierRatio;
 		angle = spanAngle;
 	}//endelse
-	return true;
+	return ZIKAI_TRUE;
 }
 
 
@@ -1241,7 +1243,7 @@ std::string to_string(T value)
 
 
 // draw fitted circles
-cv::Mat drawResult(bool onImage, cv::Mat srcImg, std::string srcImgName, std::vector<Circles> circles)
+cv::Mat drawResult(bool onImage, cv::Mat srcImg, std::string srcImgName, const std::vector<Circles>& circles)
 {
 	cv::Mat colorImage;
 	int height = srcImg.rows;
@@ -1405,7 +1407,7 @@ pre_rec_fmeasure Evaluate(const std::vector<Circles>& ellGT, const std::vector<C
 
 			if (bTest)
 			{
-				vec_gt[j] = true;
+				vec_gt[j] = ZIKAI_TRUE;
 				break;
 			}
 		}
@@ -1449,6 +1451,4 @@ pre_rec_fmeasure Evaluate(const std::vector<Circles>& ellGT, const std::vector<C
 	return totalResult;
 }
 
-
-
-
+} //end of namespace Zikai

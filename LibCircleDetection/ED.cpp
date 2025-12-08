@@ -2,10 +2,11 @@
 #include "EDColor.h"
 #include <fstream>
 
+
 //using namespace cv;
 //using namespace std;
 //类ED的构造函数ED
-ED::ED(cv::Mat _srcImage, GradientOperator _op, int _gradThresh, int _anchorThresh, int _scanInterval, int _minPathLen, double _sigma, bool _sumFlag)
+Zikai::ED::ED(cv::Mat _srcImage, GradientOperator _op, int _gradThresh, int _anchorThresh, int _scanInterval, int _minPathLen, double _sigma, bool _sumFlag)
 {
 	// Check parameters for sanity
 	if (_gradThresh < 1) _gradThresh = 1;
@@ -67,7 +68,7 @@ ED::ED(cv::Mat _srcImage, GradientOperator _op, int _gradThresh, int _anchorThre
 
 // This constructor for use of EDLines and EDCircle with ED given as constructor argument
 // only the necessary attributes are coppied
-ED::ED(const ED& cpyObj)
+Zikai::ED::ED(const ED& cpyObj)
 {
 	height = cpyObj.height;
 	width = cpyObj.width;
@@ -98,7 +99,7 @@ ED::ED(const ED& cpyObj)
 
 // This constructor for use of EDColor with use of direction and gradient image
 // It finds edge image for given gradient and direction image
-ED::ED(short* _gradImg, uchar* _dirImg, int _width, int _height, int _gradThresh, int _anchorThresh, int _scanInterval, int _minPathLen, bool selectStableAnchors)
+Zikai::ED::ED(short* _gradImg, uchar* _dirImg, int _width, int _height, int _gradThresh, int _anchorThresh, int _scanInterval, int _minPathLen, bool selectStableAnchors)
 {
 	height = _height;
 	width = _width;
@@ -126,7 +127,7 @@ ED::ED(short* _gradImg, uchar* _dirImg, int _width, int _height, int _gradThresh
 
 		for (int i = 1; i < height - 1; i++) {
 			for (int j = 1; j < width - 1; j++) {
-				if (edgeImg[i * width + j] != ANCHOR_PIXEL) continue;
+				if (edgeImg[i * width + j] != ZIKAI_ANCHOR_PIXEL) continue;
 
 				// Take only "stable" anchors
 				// 0 degree edge
@@ -166,10 +167,10 @@ ED::ED(short* _gradImg, uchar* _dirImg, int _width, int _height, int _gradThresh
 		} //end-for
 
 		for (int i = 0; i < width * height; i++)
-			if (edgeImg[i] == ANCHOR_PIXEL)
+			if (edgeImg[i] == ZIKAI_ANCHOR_PIXEL)
 				edgeImg[i] = 0;
 			else if (edgeImg[i] == 255) {
-				edgeImg[i] = ANCHOR_PIXEL;
+				edgeImg[i] = ZIKAI_ANCHOR_PIXEL;
 				int y = i / width;
 				int x = i % width;
 				anchorPoints.push_back(cv::Point(x, y)); // push validated anchor point to vector
@@ -189,7 +190,7 @@ ED::ED(short* _gradImg, uchar* _dirImg, int _width, int _height, int _gradThresh
 	JoinAnchorPointsUsingSortedAnchors();
 }
 
-ED::ED(EDColor& obj)
+Zikai::ED::ED(EDColor& obj)
 {
 	width = obj.getWidth();
 	height = obj.getHeight();
@@ -197,18 +198,18 @@ ED::ED(EDColor& obj)
 	segmentNos = obj.getSegmentNo();
 }
 
-ED::ED()
+Zikai::ED::ED()
 {
 	//
 }
 
 
-cv::Mat ED::getEdgeImage()
+cv::Mat Zikai::ED::getEdgeImage()
 {
 	return edgeImage;
 }
 
-cv::Mat ED::getAnchorImage()
+cv::Mat Zikai::ED::getAnchorImage()
 {
 	cv::Mat anchorImage = cv::Mat(edgeImage.size(), edgeImage.type(), cv::Scalar(0));
 
@@ -223,12 +224,12 @@ cv::Mat ED::getAnchorImage()
 	return anchorImage;
 }
 
-cv::Mat ED::getSmoothImage()
+cv::Mat Zikai::ED::getSmoothImage()
 {
 	return smoothImage;
 }
 
-cv::Mat ED::getGradImage()
+cv::Mat Zikai::ED::getGradImage()
 {
 	cv::Mat result8UC1;
 	convertScaleAbs(gradImage, result8UC1);
@@ -236,27 +237,27 @@ cv::Mat ED::getGradImage()
 	return result8UC1;
 }
 
-int ED::getSegmentNo()
+int Zikai::ED::getSegmentNo()
 {
 	return segmentNos;
 }
 
-int ED::getAnchorNo()
+int Zikai::ED::getAnchorNo()
 {
 	return anchorNos;
 }
 
-std::vector<cv::Point> ED::getAnchorPoints()
+std::vector<cv::Point> Zikai::ED::getAnchorPoints()
 {
 	return anchorPoints;
 }
 
-std::vector<std::vector<cv::Point>> ED::getSegments()
+std::vector<std::vector<cv::Point>> Zikai::ED::getSegments()
 {
 	return segmentPoints;
 }
 
-std::vector<std::vector<cv::Point>> ED::getSortedSegments()
+std::vector<std::vector<cv::Point>> Zikai::ED::getSortedSegments()
 {
 	// sort segments from largest to smallest
 	std::sort(segmentPoints.begin(), segmentPoints.end(), [](const std::vector<cv::Point>& a, const std::vector<cv::Point>& b) { return a.size() > b.size(); });
@@ -264,7 +265,7 @@ std::vector<std::vector<cv::Point>> ED::getSortedSegments()
 	return segmentPoints;
 }
 
-cv::Mat ED::drawParticularSegments(std::vector<int> list)
+cv::Mat Zikai::ED::drawParticularSegments(std::vector<int> list)
 {
 	cv::Mat segmentsImage = cv::Mat(edgeImage.size(), edgeImage.type(), cv::Scalar(0));
 
@@ -279,7 +280,7 @@ cv::Mat ED::drawParticularSegments(std::vector<int> list)
 }
 
 
-void ED::ComputeGradient()
+void Zikai::ED::ComputeGradient()
 {
 	// Initialize gradient image for row = 0, row = height-1, column=0, column=width-1 
 	for (int j = 0; j < width; j++) { gradImg[j] = gradImg[(height - 1) * width + j] = gradThresh - 1; }
@@ -361,14 +362,14 @@ void ED::ComputeGradient()
 			gradImg[index] = sum;
 
 			if (sum >= gradThresh) {
-				if (gx >= gy) dirImg[index] = EDGE_VERTICAL;
-				else          dirImg[index] = EDGE_HORIZONTAL;
+				if (gx >= gy) dirImg[index] = ZIKAI_EDGE_VERTICAL;
+				else          dirImg[index] = ZIKAI_EDGE_HORIZONTAL;
 			} //end-if
 		} // end-for
 	} // end-for
 }
 
-void ED::ComputeAnchorPoints()
+void Zikai::ED::ComputeAnchorPoints()
 {
 	//memset(edgeImg, 0, width*height);
 	for (int i = 2; i < height - 2; i++) {
@@ -379,12 +380,12 @@ void ED::ComputeAnchorPoints()
 		for (int j = start; j < width - 2; j += inc) {
 			if (gradImg[i * width + j] < gradThresh) continue;
 
-			if (dirImg[i * width + j] == EDGE_VERTICAL) {
+			if (dirImg[i * width + j] == ZIKAI_EDGE_VERTICAL) {
 				// vertical edge
 				int diff1 = gradImg[i * width + j] - gradImg[i * width + j - 1];
 				int diff2 = gradImg[i * width + j] - gradImg[i * width + j + 1];
 				if (diff1 >= anchorThresh && diff2 >= anchorThresh) {
-					edgeImg[i * width + j] = ANCHOR_PIXEL;
+					edgeImg[i * width + j] = ZIKAI_ANCHOR_PIXEL;
 					anchorPoints.push_back(cv::Point(j, i));
 				}
 
@@ -394,7 +395,7 @@ void ED::ComputeAnchorPoints()
 				int diff1 = gradImg[i * width + j] - gradImg[(i - 1) * width + j];
 				int diff2 = gradImg[i * width + j] - gradImg[(i + 1) * width + j];
 				if (diff1 >= anchorThresh && diff2 >= anchorThresh) {
-					edgeImg[i * width + j] = ANCHOR_PIXEL;
+					edgeImg[i * width + j] = ZIKAI_ANCHOR_PIXEL;
 					anchorPoints.push_back(cv::Point(j, i));
 				}
 			} // end-else
@@ -404,7 +405,7 @@ void ED::ComputeAnchorPoints()
 	anchorNos = anchorPoints.size(); // get the total number of anchor points
 }
 
-void ED::JoinAnchorPointsUsingSortedAnchors()
+void Zikai::ED::JoinAnchorPointsUsingSortedAnchors()
 {
 	//int* chainNos = new int[(width + height) * 8];
 
@@ -436,7 +437,7 @@ void ED::JoinAnchorPointsUsingSortedAnchors()
 		//int i = anchorPoints[k].y;
 		//int j = anchorPoints[k].x;
 
-		if (edgeImg[i * width + j] != ANCHOR_PIXEL) continue;
+		if (edgeImg[i * width + j] != ZIKAI_ANCHOR_PIXEL) continue;
 
 		chains[0].len = 0;
 		chains[0].parent = -1;
@@ -450,27 +451,27 @@ void ED::JoinAnchorPointsUsingSortedAnchors()
 		int duplicatePixelCount = 0;
 		int top = -1;  // top of the stack 
 
-		if (dirImg[i * width + j] == EDGE_VERTICAL) {
+		if (dirImg[i * width + j] == ZIKAI_EDGE_VERTICAL) {
 			stack[++top].r = i;
 			stack[top].c = j;
-			stack[top].dir = DOWN;
+			stack[top].dir = ZIKAI_DOWN;
 			stack[top].parent = 0;
 
 			stack[++top].r = i;
 			stack[top].c = j;
-			stack[top].dir = UP;
+			stack[top].dir = ZIKAI_UP;
 			stack[top].parent = 0;
 
 		}
 		else {
 			stack[++top].r = i;
 			stack[top].c = j;
-			stack[top].dir = RIGHT;
+			stack[top].dir = ZIKAI_RIGHT;
 			stack[top].parent = 0;
 
 			stack[++top].r = i;
 			stack[top].c = j;
-			stack[top].dir = LEFT;
+			stack[top].dir = ZIKAI_LEFT;
 			stack[top].parent = 0;
 		} //end-else
 
@@ -483,7 +484,7 @@ void ED::JoinAnchorPointsUsingSortedAnchors()
 			int parent = stack[top].parent;
 			top--;
 
-			if (edgeImg[r * width + c] != EDGE_PIXEL) duplicatePixelCount++;
+			if (edgeImg[r * width + c] != ZIKAI_EDGE_PIXEL) duplicatePixelCount++;
 
 			chains[noChains].dir = dir;   // traversal direction
 			chains[noChains].parent = parent;
@@ -499,9 +500,9 @@ void ED::JoinAnchorPointsUsingSortedAnchors()
 			len++;
 			chainLen++;
 
-			if (dir == LEFT) {
-				while (dirImg[r * width + c] == EDGE_HORIZONTAL) {
-					edgeImg[r * width + c] = EDGE_PIXEL;
+			if (dir == ZIKAI_LEFT) {
+				while (dirImg[r * width + c] == ZIKAI_EDGE_HORIZONTAL) {
+					edgeImg[r * width + c] = ZIKAI_EDGE_PIXEL;
 
 					// The edge is horizontal. Look LEFT
 					//
@@ -510,13 +511,13 @@ void ED::JoinAnchorPointsUsingSortedAnchors()
 					//   C 
 					//
 					// cleanup up & down pixels
-					if (edgeImg[(r - 1) * width + c] == ANCHOR_PIXEL) edgeImg[(r - 1) * width + c] = 0;
-					if (edgeImg[(r + 1) * width + c] == ANCHOR_PIXEL) edgeImg[(r + 1) * width + c] = 0;
+					if (edgeImg[(r - 1) * width + c] == ZIKAI_ANCHOR_PIXEL) edgeImg[(r - 1) * width + c] = 0;
+					if (edgeImg[(r + 1) * width + c] == ZIKAI_ANCHOR_PIXEL) edgeImg[(r + 1) * width + c] = 0;
 
 					// Look if there is an edge pixel in the neighbors
-					if (edgeImg[r * width + c - 1] >= ANCHOR_PIXEL) { c--; }
-					else if (edgeImg[(r - 1) * width + c - 1] >= ANCHOR_PIXEL) { r--; c--; }
-					else if (edgeImg[(r + 1) * width + c - 1] >= ANCHOR_PIXEL) { r++; c--; }
+					if (edgeImg[r * width + c - 1] >= ZIKAI_ANCHOR_PIXEL) { c--; }
+					else if (edgeImg[(r - 1) * width + c - 1] >= ZIKAI_ANCHOR_PIXEL) { r--; c--; }
+					else if (edgeImg[(r + 1) * width + c - 1] >= ZIKAI_ANCHOR_PIXEL) { r++; c--; }
 					else {
 						// else -- follow max. pixel to the LEFT
 						int A = gradImg[(r - 1) * width + c - 1];
@@ -531,7 +532,7 @@ void ED::JoinAnchorPointsUsingSortedAnchors()
 						c--;
 					} //end-else
 
-					if (edgeImg[r * width + c] == EDGE_PIXEL || gradImg[r * width + c] < gradThresh) {
+					if (edgeImg[r * width + c] == ZIKAI_EDGE_PIXEL || gradImg[r * width + c] < gradThresh) {
 						if (chainLen > 0) {
 							chains[noChains].len = chainLen;
 							chains[parent].children[0] = noChains;
@@ -549,12 +550,12 @@ void ED::JoinAnchorPointsUsingSortedAnchors()
 
 				stack[++top].r = r;
 				stack[top].c = c;
-				stack[top].dir = DOWN;
+				stack[top].dir = ZIKAI_DOWN;
 				stack[top].parent = noChains;
 
 				stack[++top].r = r;
 				stack[top].c = c;
-				stack[top].dir = UP;
+				stack[top].dir = ZIKAI_UP;
 				stack[top].parent = noChains;
 
 				len--;
@@ -565,9 +566,9 @@ void ED::JoinAnchorPointsUsingSortedAnchors()
 				noChains++;
 
 			}
-			else if (dir == RIGHT) {
-				while (dirImg[r * width + c] == EDGE_HORIZONTAL) {
-					edgeImg[r * width + c] = EDGE_PIXEL;
+			else if (dir == ZIKAI_RIGHT) {
+				while (dirImg[r * width + c] == ZIKAI_EDGE_HORIZONTAL) {
+					edgeImg[r * width + c] = ZIKAI_EDGE_PIXEL;
 
 					// The edge is horizontal. Look RIGHT
 					//
@@ -576,13 +577,13 @@ void ED::JoinAnchorPointsUsingSortedAnchors()
 					//     C
 					//
 					// cleanup up&down pixels
-					if (edgeImg[(r + 1) * width + c] == ANCHOR_PIXEL) edgeImg[(r + 1) * width + c] = 0;
-					if (edgeImg[(r - 1) * width + c] == ANCHOR_PIXEL) edgeImg[(r - 1) * width + c] = 0;
+					if (edgeImg[(r + 1) * width + c] == ZIKAI_ANCHOR_PIXEL) edgeImg[(r + 1) * width + c] = 0;
+					if (edgeImg[(r - 1) * width + c] == ZIKAI_ANCHOR_PIXEL) edgeImg[(r - 1) * width + c] = 0;
 
 					// Look if there is an edge pixel in the neighbors
-					if (edgeImg[r * width + c + 1] >= ANCHOR_PIXEL) { c++; }
-					else if (edgeImg[(r + 1) * width + c + 1] >= ANCHOR_PIXEL) { r++; c++; }
-					else if (edgeImg[(r - 1) * width + c + 1] >= ANCHOR_PIXEL) { r--; c++; }
+					if (edgeImg[r * width + c + 1] >= ZIKAI_ANCHOR_PIXEL) { c++; }
+					else if (edgeImg[(r + 1) * width + c + 1] >= ZIKAI_ANCHOR_PIXEL) { r++; c++; }
+					else if (edgeImg[(r - 1) * width + c + 1] >= ZIKAI_ANCHOR_PIXEL) { r--; c++; }
 					else {
 						// else -- follow max. pixel to the RIGHT
 						int A = gradImg[(r - 1) * width + c + 1];
@@ -597,7 +598,7 @@ void ED::JoinAnchorPointsUsingSortedAnchors()
 						c++;
 					} //end-else
 
-					if (edgeImg[r * width + c] == EDGE_PIXEL || gradImg[r * width + c] < gradThresh) {
+					if (edgeImg[r * width + c] == ZIKAI_EDGE_PIXEL || gradImg[r * width + c] < gradThresh) {
 						if (chainLen > 0) {
 							chains[noChains].len = chainLen;
 							chains[parent].children[1] = noChains;
@@ -615,12 +616,12 @@ void ED::JoinAnchorPointsUsingSortedAnchors()
 
 				stack[++top].r = r;
 				stack[top].c = c;
-				stack[top].dir = DOWN;  // Go down
+				stack[top].dir = ZIKAI_DOWN;  // Go down
 				stack[top].parent = noChains;
 
 				stack[++top].r = r;
 				stack[top].c = c;
-				stack[top].dir = UP;   // Go up
+				stack[top].dir = ZIKAI_UP;   // Go up
 				stack[top].parent = noChains;
 
 				len--;
@@ -631,9 +632,9 @@ void ED::JoinAnchorPointsUsingSortedAnchors()
 				noChains++;
 
 			}
-			else if (dir == UP) {
-				while (dirImg[r * width + c] == EDGE_VERTICAL) {
-					edgeImg[r * width + c] = EDGE_PIXEL;
+			else if (dir == ZIKAI_UP) {
+				while (dirImg[r * width + c] == ZIKAI_EDGE_VERTICAL) {
+					edgeImg[r * width + c] = ZIKAI_EDGE_PIXEL;
 
 					// The edge is vertical. Look UP
 					//
@@ -641,13 +642,13 @@ void ED::JoinAnchorPointsUsingSortedAnchors()
 					//     x
 					//
 					// Cleanup left & right pixels
-					if (edgeImg[r * width + c - 1] == ANCHOR_PIXEL) edgeImg[r * width + c - 1] = 0;
-					if (edgeImg[r * width + c + 1] == ANCHOR_PIXEL) edgeImg[r * width + c + 1] = 0;
+					if (edgeImg[r * width + c - 1] == ZIKAI_ANCHOR_PIXEL) edgeImg[r * width + c - 1] = 0;
+					if (edgeImg[r * width + c + 1] == ZIKAI_ANCHOR_PIXEL) edgeImg[r * width + c + 1] = 0;
 
 					// Look if there is an edge pixel in the neighbors
-					if (edgeImg[(r - 1) * width + c] >= ANCHOR_PIXEL) { r--; }
-					else if (edgeImg[(r - 1) * width + c - 1] >= ANCHOR_PIXEL) { r--; c--; }
-					else if (edgeImg[(r - 1) * width + c + 1] >= ANCHOR_PIXEL) { r--; c++; }
+					if (edgeImg[(r - 1) * width + c] >= ZIKAI_ANCHOR_PIXEL) { r--; }
+					else if (edgeImg[(r - 1) * width + c - 1] >= ZIKAI_ANCHOR_PIXEL) { r--; c--; }
+					else if (edgeImg[(r - 1) * width + c + 1] >= ZIKAI_ANCHOR_PIXEL) { r--; c++; }
 					else {
 						// else -- follow the max. pixel UP
 						int A = gradImg[(r - 1) * width + c - 1];
@@ -662,7 +663,7 @@ void ED::JoinAnchorPointsUsingSortedAnchors()
 						r--;
 					} //end-else
 
-					if (edgeImg[r * width + c] == EDGE_PIXEL || gradImg[r * width + c] < gradThresh) {
+					if (edgeImg[r * width + c] == ZIKAI_EDGE_PIXEL || gradImg[r * width + c] < gradThresh) {
 						if (chainLen > 0) {
 							chains[noChains].len = chainLen;
 							chains[parent].children[0] = noChains;
@@ -681,12 +682,12 @@ void ED::JoinAnchorPointsUsingSortedAnchors()
 
 				stack[++top].r = r;
 				stack[top].c = c;
-				stack[top].dir = RIGHT;
+				stack[top].dir = ZIKAI_RIGHT;
 				stack[top].parent = noChains;
 
 				stack[++top].r = r;
 				stack[top].c = c;
-				stack[top].dir = LEFT;
+				stack[top].dir = ZIKAI_LEFT;
 				stack[top].parent = noChains;
 
 				len--;
@@ -698,8 +699,8 @@ void ED::JoinAnchorPointsUsingSortedAnchors()
 
 			}
 			else { // dir == DOWN
-				while (dirImg[r * width + c] == EDGE_VERTICAL) {
-					edgeImg[r * width + c] = EDGE_PIXEL;
+				while (dirImg[r * width + c] == ZIKAI_EDGE_VERTICAL) {
+					edgeImg[r * width + c] = ZIKAI_EDGE_PIXEL;
 
 					// The edge is vertical
 					//
@@ -707,13 +708,13 @@ void ED::JoinAnchorPointsUsingSortedAnchors()
 					//   A B C
 					//
 					// cleanup side pixels
-					if (edgeImg[r * width + c + 1] == ANCHOR_PIXEL) edgeImg[r * width + c + 1] = 0;
-					if (edgeImg[r * width + c - 1] == ANCHOR_PIXEL) edgeImg[r * width + c - 1] = 0;
+					if (edgeImg[r * width + c + 1] == ZIKAI_ANCHOR_PIXEL) edgeImg[r * width + c + 1] = 0;
+					if (edgeImg[r * width + c - 1] == ZIKAI_ANCHOR_PIXEL) edgeImg[r * width + c - 1] = 0;
 
 					// Look if there is an edge pixel in the neighbors
-					if (edgeImg[(r + 1) * width + c] >= ANCHOR_PIXEL) { r++; }
-					else if (edgeImg[(r + 1) * width + c + 1] >= ANCHOR_PIXEL) { r++; c++; }
-					else if (edgeImg[(r + 1) * width + c - 1] >= ANCHOR_PIXEL) { r++; c--; }
+					if (edgeImg[(r + 1) * width + c] >= ZIKAI_ANCHOR_PIXEL) { r++; }
+					else if (edgeImg[(r + 1) * width + c + 1] >= ZIKAI_ANCHOR_PIXEL) { r++; c++; }
+					else if (edgeImg[(r + 1) * width + c - 1] >= ZIKAI_ANCHOR_PIXEL) { r++; c--; }
 					else {
 						// else -- follow the max. pixel DOWN
 						int A = gradImg[(r + 1) * width + c - 1];
@@ -728,7 +729,7 @@ void ED::JoinAnchorPointsUsingSortedAnchors()
 						r++;
 					} //end-else
 
-					if (edgeImg[r * width + c] == EDGE_PIXEL || gradImg[r * width + c] < gradThresh) {
+					if (edgeImg[r * width + c] == ZIKAI_EDGE_PIXEL || gradImg[r * width + c] < gradThresh) {
 						if (chainLen > 0) {
 							chains[noChains].len = chainLen;
 							chains[parent].children[1] = noChains;
@@ -746,12 +747,12 @@ void ED::JoinAnchorPointsUsingSortedAnchors()
 
 				stack[++top].r = r;
 				stack[top].c = c;
-				stack[top].dir = RIGHT;
+				stack[top].dir = ZIKAI_RIGHT;
 				stack[top].parent = noChains;
 
 				stack[++top].r = r;
 				stack[top].c = c;
-				stack[top].dir = LEFT;
+				stack[top].dir = ZIKAI_LEFT;
 				stack[top].parent = noChains;
 
 				len--;
@@ -971,7 +972,7 @@ void ED::JoinAnchorPointsUsingSortedAnchors()
 	segmentPoints.pop_back();
 }
 
-void ED::sortAnchorsByGradValue()
+void Zikai::ED::sortAnchorsByGradValue()
 {
 	auto sortFunc = [&](const cv::Point& a, const cv::Point& b)
 	{
@@ -1006,7 +1007,7 @@ void ED::sortAnchorsByGradValue()
 	*/
 }
 
-std::vector<int> ED::sortAnchorsByGradValue1()
+std::vector<int> Zikai::ED::sortAnchorsByGradValue1()
 {
 	int SIZE = 128 * 256;
 	std::vector<int> C(SIZE,0);
@@ -1014,7 +1015,7 @@ std::vector<int> ED::sortAnchorsByGradValue1()
 	// Count the number of grad values
 	for (int i = 1; i < height - 1; i++) {
 		for (int j = 1; j < width - 1; j++) {
-			if (edgeImg[i * width + j] != ANCHOR_PIXEL) continue;
+			if (edgeImg[i * width + j] != ZIKAI_ANCHOR_PIXEL) continue;
 
 			int grad = gradImg[i * width + j];
 			C[grad]++;
@@ -1031,7 +1032,7 @@ std::vector<int> ED::sortAnchorsByGradValue1()
 
 	for (int i = 1; i < height - 1; i++) {
 		for (int j = 1; j < width - 1; j++) {
-			if (edgeImg[i * width + j] != ANCHOR_PIXEL) continue;
+			if (edgeImg[i * width + j] != ZIKAI_ANCHOR_PIXEL) continue;
 
 			int grad = gradImg[i * width + j];
 			int index = --C[grad];
@@ -1054,7 +1055,7 @@ std::vector<int> ED::sortAnchorsByGradValue1()
 }
 
 
-int ED::LongestChain(std::vector<Chain>& chains, int root) {
+int Zikai::ED::LongestChain(std::vector<Chain>& chains, int root) {
 	if (root == -1 || chains[root].len == 0) return 0;
 
 	int len0 = 0;
@@ -1078,7 +1079,7 @@ int ED::LongestChain(std::vector<Chain>& chains, int root) {
 	return chains[root].len + max;
 } //end-LongestChain
 
-int ED::RetrieveChainNos(std::vector<Chain>& chains, int root, std::vector<int>& chainNos)
+int Zikai::ED::RetrieveChainNos(std::vector<Chain>& chains, int root, std::vector<int>& chainNos)
 {
 	int count = 0;
 

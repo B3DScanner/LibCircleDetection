@@ -30,26 +30,27 @@
 
 #include "ED.h"
 
-#define MAX_GRAD_VALUE 128*256
-#define EPSILON 1.0
+namespace Zikai {
 
-class EDPF : public ED {
-public:
-	EDPF(cv::Mat srcImage);
-	EDPF(ED obj);
-	EDPF(EDColor obj);
-private:
-	double divForTestSegment;
-	std::vector<double> H;
-	int np;
-	std::vector<short> gradImg;
+	class EDPF : public ED {
+	public:
+		EDPF(cv::Mat srcImage);
+		EDPF(ED obj);
+		EDPF(EDColor obj);
+	private:
+		double divForTestSegment;
+		std::vector<double> H;
+		int np;
+		std::vector<short> gradImg;
 
-	void validateEdgeSegments();
-	std::vector<short> ComputePrewitt3x3(); // differs from base class's prewit function (calculates H)
-	void TestSegment(int i, int index1, int index2);
-	void ExtractNewSegments();
-	double NFA(double prob, int len);
-};
+		void validateEdgeSegments();
+		std::vector<short> ComputePrewitt3x3(); // differs from base class's prewit function (calculates H)
+		void TestSegment(int i, int index1, int index2);
+		void ExtractNewSegments();
+		double NFA(double prob, int len);
+	};
+
+} // namespace Zikai
 
 #endif // ! _EDPF_
 

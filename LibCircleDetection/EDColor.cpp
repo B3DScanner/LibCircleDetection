@@ -4,7 +4,11 @@
 //using namespace cv;
 //using namespace std;
 
-EDColor::EDColor(cv::Mat srcImage, int gradThresh, int anchor_thresh, double sigma, bool validateSegments)
+
+
+
+
+Zikai::EDColor::EDColor(cv::Mat srcImage, int gradThresh, int anchor_thresh, double sigma, bool validateSegments)
 {
 	inputImage = srcImage.clone();
 
@@ -85,33 +89,33 @@ EDColor::EDColor(cv::Mat srcImage, int gradThresh, int anchor_thresh, double sig
 	fixEdgeSegments(segments, 1);
 }
 
-cv::Mat EDColor::getEdgeImage()
+cv::Mat Zikai::EDColor::getEdgeImage()
 {
 	return edgeImage;
 }
 
 
-std::vector<std::vector<cv::Point>> EDColor::getSegments()
+std::vector<std::vector<cv::Point>> Zikai::EDColor::getSegments()
 {
 	return segments;
 }
 
-int EDColor::getSegmentNo()
+int Zikai::EDColor::getSegmentNo()
 {
 	return segmentNo;
 }
 
-int EDColor::getWidth()
+int Zikai::EDColor::getWidth()
 {
 	return width;
 }
 
-int EDColor::getHeight()
+int Zikai::EDColor::getHeight()
 {
 	return height;
 }
 
-void EDColor::MyRGB2LabFast()
+void Zikai::EDColor::MyRGB2LabFast()
 {
 	// Inialize LUTs if necessary
 	if (!LUT_Initialized)
@@ -131,9 +135,9 @@ void EDColor::MyRGB2LabFast()
 		green = greenImg[i] / 255.0;
 		blue = blueImg[i] / 255.0;
 
-		red = LUT1[(int)(red * LUT_SIZE + 0.5)];
-		green = LUT1[(int)(green * LUT_SIZE + 0.5)];
-		blue = LUT1[(int)(blue * LUT_SIZE + 0.5)];
+		red = LUT1[(int)(red * ZIKAI_LUT_SIZE + 0.5)];
+		green = LUT1[(int)(green * ZIKAI_LUT_SIZE + 0.5)];
+		blue = LUT1[(int)(blue * ZIKAI_LUT_SIZE + 0.5)];
 
 		red = red * 100;
 		green = green * 100;
@@ -153,9 +157,9 @@ void EDColor::MyRGB2LabFast()
 		y = y / refY;          //ref_Y = 100.000
 		z = z / refZ;          //ref_Z = 108.883
 
-		x = LUT2[(int)(x * LUT_SIZE + 0.5)];
-		y = LUT2[(int)(y * LUT_SIZE + 0.5)];
-		z = LUT2[(int)(z * LUT_SIZE + 0.5)];
+		x = LUT2[(int)(x * ZIKAI_LUT_SIZE + 0.5)];
+		y = LUT2[(int)(y * ZIKAI_LUT_SIZE + 0.5)];
+		z = LUT2[(int)(z * ZIKAI_LUT_SIZE + 0.5)];
 
 		L[i] = (116.0 * y) - 16;
 		a[i] = 500 * (x / y);
@@ -196,7 +200,7 @@ void EDColor::MyRGB2LabFast()
 	for (int i = 0; i < width * height; i++) { b_Img[i] = (unsigned char)((b[i] - min) * scale); }
 }
 
-void EDColor::ComputeGradientMapByDiZenzo()
+void Zikai::EDColor::ComputeGradientMapByDiZenzo()
 {
 	memset(gradImg.data(), 0, sizeof(short) * width * height);
 
@@ -266,9 +270,9 @@ void EDColor::ComputeGradientMapByDiZenzo()
 
 			// Gradient is perpendicular to the edge passing through the pixel	
 			if (theta >= -3.14159 / 4 && theta <= 3.14159 / 4)
-				dirImg[i * width + j] = EDGE_VERTICAL;
+				dirImg[i * width + j] = ZIKAI_EDGE_VERTICAL;
 			else
-				dirImg[i * width + j] = EDGE_HORIZONTAL;
+				dirImg[i * width + j] = ZIKAI_EDGE_HORIZONTAL;
 
 			gradImg[i * width + j] = grad;
 			if (grad > max) max = grad;
@@ -282,7 +286,7 @@ void EDColor::ComputeGradientMapByDiZenzo()
 		gradImg[i] = (short)(gradImg[i] * scale);
 }
 
-void EDColor::smoothChannel(std::vector<uchar>& src, std::vector<uchar>& smooth, double sigma)
+void Zikai::EDColor::smoothChannel(std::vector<uchar>& src, std::vector<uchar>& smooth, double sigma)
 {
 	const cv::Mat srcImage = cv::Mat(height, width, CV_8UC1, src.data());
 	cv::Mat smoothImage = cv::Mat(height, width, CV_8UC1, smooth.data());
@@ -299,9 +303,9 @@ void EDColor::smoothChannel(std::vector<uchar>& src, std::vector<uchar>& smooth,
 //--------------------------------------------------------------------------------------------------------------------
 // Validate the edge segments using the Helmholtz principle (for color images) channel1, channel2 and channel3 images
 //
-void EDColor::validateEdgeSegments()
+void Zikai::EDColor::validateEdgeSegments()
 {
-	int maxGradValue = MAX_GRAD_VALUE;
+	int maxGradValue = ZIKAI_MAX_GRAD_VALUE;
 	//H = new double[maxGradValue];
 	//memset(H, 0, sizeof(double) * maxGradValue);
 
@@ -382,11 +386,11 @@ void EDColor::validateEdgeSegments()
 // Resursive validation using half of the pixels as suggested by DMM algorithm
 // We take pixels at Nyquist distance, i.e., 2 (as suggested by DMM)
 //
-void EDColor::testSegment(int i, int index1, int index2)
+void Zikai::EDColor::testSegment(int i, int index1, int index2)
 {
 
 	int chainLen = index2 - index1 + 1;
-	if (chainLen < MIN_PATH_LEN)
+	if (chainLen < ZIKAI_MIN_PATH_LEN)
 		return;
 
 	// Test from index1 to index2. If OK, then we are done. Otherwise, split into two and 
@@ -404,7 +408,7 @@ void EDColor::testSegment(int i, int index1, int index2)
 	  // Compute nfa
 	double nfa = NFA(H[minGrad], (int)(chainLen / divForTestSegment));
 
-	if (nfa <= EPSILON) {
+	if (nfa <= ZIKAI_EPSILON) {
 		for (int k = index1; k <= index2; k++) {
 			int r = segments[i][k].y;
 			int c = segments[i][k].x;
@@ -442,7 +446,7 @@ void EDColor::testSegment(int i, int index1, int index2)
 // After the validation of the edge segments, extracts the valid ones
 // In other words, updates the valid segments' pixel arrays and their lengths
 // 
-void EDColor::extractNewSegments()
+void Zikai::EDColor::extractNewSegments()
 {
 	std::vector< std::vector<cv::Point> > validSegments;
 	int noSegments = 0;
@@ -490,10 +494,10 @@ void EDColor::extractNewSegments()
 }
 
 
-double EDColor::NFA(double prob, int len)
+double Zikai::EDColor::NFA(double prob, int len)
 {
 	double nfa = np;
-	for (int i = 0; i<len && nfa > EPSILON; i++)
+	for (int i = 0; i<len && nfa > ZIKAI_EPSILON; i++)
 		nfa *= prob;
 
 	return nfa;
@@ -510,7 +514,7 @@ double EDColor::NFA(double prob, int len)
 //  xx
 // x  x --> xxxx
 //
-void EDColor::fixEdgeSegments(std::vector<std::vector<cv::Point>> map, int noPixels)
+void Zikai::EDColor::fixEdgeSegments(std::vector<std::vector<cv::Point>> map, int noPixels)
 {
 	/// First fix one pixel problems: There are four cases
 	for (int i = 0; i < map.size(); i++) {
@@ -577,30 +581,30 @@ void EDColor::fixEdgeSegments(std::vector<std::vector<cv::Point>> map, int noPix
 	} // end-for
 }
 
-void EDColor::InitColorEDLib()
+void Zikai::EDColor::InitColorEDLib()
 {
 	if (LUT_Initialized)
 		return;
 
-	double inc = 1.0 / LUT_SIZE;
-	for (int i = 0; i <= LUT_SIZE; i++) {
+	double inc = 1.0 / ZIKAI_LUT_SIZE;
+	for (int i = 0; i <= ZIKAI_LUT_SIZE; i++) {
 		double d = i * inc;
 
 		if (d >= 0.04045) LUT1[i] = pow(((d + 0.055) / 1.055), 2.4);
 		else              LUT1[i] = d / 12.92;
 	} //end-for
 
-	inc = 1.0 / LUT_SIZE;
-	for (int i = 0; i <= LUT_SIZE; i++) {
+	inc = 1.0 / ZIKAI_LUT_SIZE;
+	for (int i = 0; i <= ZIKAI_LUT_SIZE; i++) {
 		double d = i * inc;
 
 		if (d > 0.008856) LUT2[i] = pow(d, 1.0 / 3.0);
 		else              LUT2[i] = (7.787 * d) + (16.0 / 116.0);
 	} //end-for
 
-	LUT_Initialized = true;
+	LUT_Initialized = ZIKAI_TRUE;
 }
 
-bool EDColor::LUT_Initialized = false;
-double EDColor::LUT1[LUT_SIZE + 1] = { 0 };
-double EDColor::LUT2[LUT_SIZE + 1] = { 0 };
+bool Zikai::EDColor::LUT_Initialized = false;
+double Zikai::EDColor::LUT1[ZIKAI_LUT_SIZE + 1] = { 0 };
+double Zikai::EDColor::LUT2[ZIKAI_LUT_SIZE + 1] = { 0 };

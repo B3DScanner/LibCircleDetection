@@ -3,7 +3,10 @@
 //using namespace cv;
 //using namespace std;
 
-EDPF::EDPF(cv::Mat srcImage)
+
+
+
+Zikai::EDPF::EDPF(cv::Mat srcImage)
 	:ED(srcImage, PREWITT_OPERATOR, 11, 3)
 {
 	// Validate Edge Segments
@@ -13,7 +16,7 @@ EDPF::EDPF(cv::Mat srcImage)
 	validateEdgeSegments();
 }
 
-EDPF::EDPF(ED obj)
+Zikai::EDPF::EDPF(ED obj)
 	:ED(obj)
 {
 	// Validate Edge Segments
@@ -23,18 +26,18 @@ EDPF::EDPF(ED obj)
 	validateEdgeSegments();
 }
 
-EDPF::EDPF(EDColor obj)
+Zikai::EDPF::EDPF(EDColor obj)
 	:ED(obj)
 {
 }
 
-void EDPF::validateEdgeSegments()
+void Zikai::EDPF::validateEdgeSegments()
 {
 	divForTestSegment = 2.25; // Some magic number :-)
 	memset(edgeImg, 0, width * height); // clear edge image
 
-	H.resize(MAX_GRAD_VALUE);
-	memset(H.data(), 0, sizeof(double) * MAX_GRAD_VALUE);
+	H.resize(ZIKAI_MAX_GRAD_VALUE);
+	memset(H.data(), 0, sizeof(double) * ZIKAI_MAX_GRAD_VALUE);
 
 	gradImg = ComputePrewitt3x3();
 
@@ -67,11 +70,11 @@ void EDPF::validateEdgeSegments()
 
 }
 
-std::vector<short> EDPF::ComputePrewitt3x3()
+std::vector<short> Zikai::EDPF::ComputePrewitt3x3()
 {
 	std::vector<short> gradImg(width * height,0);
 	
-	std::vector<int> grads(MAX_GRAD_VALUE, 0);
+	std::vector<int> grads(ZIKAI_MAX_GRAD_VALUE, 0);
 
 
 	for (int i = 1; i < height - 1; i++) {
@@ -105,10 +108,10 @@ std::vector<short> EDPF::ComputePrewitt3x3()
 	 // Compute probability function H
 	int size = (width - 2) * (height - 2);
 
-	for (int i = MAX_GRAD_VALUE - 1; i > 0; i--)
+	for (int i = ZIKAI_MAX_GRAD_VALUE - 1; i > 0; i--)
 		grads[i - 1] += grads[i];
 
-	for (int i = 0; i < MAX_GRAD_VALUE; i++)
+	for (int i = 0; i < ZIKAI_MAX_GRAD_VALUE; i++)
 		H[i] = (double)grads[i] / ((double)size);
 
 	return gradImg;
@@ -118,7 +121,7 @@ std::vector<short> EDPF::ComputePrewitt3x3()
 // Resursive validation using half of the pixels as suggested by DMM algorithm
 // We take pixels at Nyquist distance, i.e., 2 (as suggested by DMM)
 //
-void EDPF::TestSegment(int i, int index1, int index2)
+void Zikai::EDPF::TestSegment(int i, int index1, int index2)
 {
 
 	int chainLen = index2 - index1 + 1;
@@ -140,7 +143,7 @@ void EDPF::TestSegment(int i, int index1, int index2)
 	 // Compute nfa
 	double nfa = NFA(H[minGrad], (int)(chainLen / divForTestSegment));
 
-	if (nfa <= EPSILON) {
+	if (nfa <= ZIKAI_EPSILON) {
 		for (int k = index1; k <= index2; k++) {
 			int r = segmentPoints[i][k].y;
 			int c = segmentPoints[i][k].x;
@@ -178,7 +181,7 @@ void EDPF::TestSegment(int i, int index1, int index2)
 // After the validation of the edge segments, extracts the valid ones
 // In other words, updates the valid segments' pixel arrays and their lengths
 // 
-void EDPF::ExtractNewSegments()
+void Zikai::EDPF::ExtractNewSegments()
 {
 	//std::vector<cv::Point> *segments = &segmentPoints[segmentNos];
 	std::vector< std::vector<cv::Point> > validSegments;
@@ -229,10 +232,10 @@ void EDPF::ExtractNewSegments()
 //---------------------------------------------------------------------------
 // Number of false alarms code as suggested by Desolneux, Moisan and Morel (DMM)
 //
-double EDPF::NFA(double prob, int len)
+double Zikai::EDPF::NFA(double prob, int len)
 {
 	double nfa = np;
-	for (int i = 0; i<len && nfa > EPSILON; i++)
+	for (int i = 0; i<len && nfa > ZIKAI_EPSILON; i++)
 		nfa *= prob;
 
 	return nfa;

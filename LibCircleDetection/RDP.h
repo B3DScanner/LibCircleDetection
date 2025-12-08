@@ -19,77 +19,83 @@
 
 //typedef std::pair<double, double> cv::Point;//typedef std::pair<double, double> cv::Point;
 
-double PerpendicularDistance(const cv::Point& pt, const cv::Point& lineStart, const cv::Point& lineEnd)
+namespace Zikai
 {
-	double dx = lineEnd.x - lineStart.x;
-	double dy = lineEnd.y - lineStart.y;
 
-	//Normalise
-	double mag = pow(pow(dx, 2.0) + pow(dy, 2.0), 0.5);
-	if (mag > 0.0)
+
+
+	double PerpendicularDistance(const cv::Point& pt, const cv::Point& lineStart, const cv::Point& lineEnd)
 	{
-		dx /= mag; dy /= mag;
-	}
+		double dx = lineEnd.x - lineStart.x;
+		double dy = lineEnd.y - lineStart.y;
 
-	double pvx = pt.x - lineStart.x;
-	double pvy = pt.y - lineStart.y;
-
-	//Get dot product (project pv onto normalized direction)
-	double pvdot = dx * pvx + dy * pvy;
-
-	//Scale line direction vector
-	double dsx = pvdot * dx;
-	double dsy = pvdot * dy;
-
-	//Subtract this from pv
-	double ax = pvx - dsx;
-	double ay = pvy - dsy;
-
-	return pow(pow(ax, 2.0) + pow(ay, 2.0), 0.5);
-}
-
-void RamerDouglasPeucker(const std::vector<cv::Point>& pointList, double epsilon, std::vector<cv::Point>& out)// const std::vector<cv::Point> &pointList
-{
-	if (pointList.size() < 2)
-		throw std::invalid_argument("Not enough points to simplify");
-
-	// Find the point with the maximum distance from line between start and end
-	double dmax = 0.0;
-	int index = 0;
-	int end = pointList.size() - 1;
-	for (int i = 1; i < end; i++)
-	{
-		double d = PerpendicularDistance(pointList[i], pointList[0], pointList[end]);
-		if (d > dmax)
+		//Normalise
+		double mag = pow(pow(dx, 2.0) + pow(dy, 2.0), 0.5);
+		if (mag > 0.0)
 		{
-			index = i;
-			dmax = d;
+			dx /= mag; dy /= mag;
 		}
+
+		double pvx = pt.x - lineStart.x;
+		double pvy = pt.y - lineStart.y;
+
+		//Get dot product (project pv onto normalized direction)
+		double pvdot = dx * pvx + dy * pvy;
+
+		//Scale line direction vector
+		double dsx = pvdot * dx;
+		double dsy = pvdot * dy;
+
+		//Subtract this from pv
+		double ax = pvx - dsx;
+		double ay = pvy - dsy;
+
+		return pow(pow(ax, 2.0) + pow(ay, 2.0), 0.5);
 	}
 
-	// If max distance is greater than epsilon, recursively simplify
-	if (dmax > epsilon)
+	void RamerDouglasPeucker(const std::vector<cv::Point>& pointList, double epsilon, std::vector<cv::Point>& out)// const std::vector<cv::Point> &pointList
 	{
-		// Recursive call
-		std::vector<cv::Point> recResults1;
-		std::vector<cv::Point> recResults2;
-		std::vector<cv::Point> firstLine(pointList.begin(), pointList.begin() + index + 1);
-		std::vector<cv::Point> lastLine(pointList.begin() + index, pointList.end());
-		RamerDouglasPeucker(firstLine, epsilon, recResults1);
-		RamerDouglasPeucker(lastLine, epsilon, recResults2);
+		if (pointList.size() < 2)
+			throw std::invalid_argument("Not enough points to simplify");
 
-		// Build the result list
-		out.assign(recResults1.begin(), recResults1.end() - 1);
-		out.insert(out.end(), recResults2.begin(), recResults2.end());
-		if (out.size() < 2)
-			throw std::runtime_error("Problem assembling output");
-	}
-	else
-	{
-		//Just return start and end points
-		out.clear();
-		out.push_back(pointList[0]);//pointList[0]
-		out.push_back(pointList[end]);
+		// Find the point with the maximum distance from line between start and end
+		double dmax = 0.0;
+		int index = 0;
+		int end = pointList.size() - 1;
+		for (int i = 1; i < end; i++)
+		{
+			double d = PerpendicularDistance(pointList[i], pointList[0], pointList[end]);
+			if (d > dmax)
+			{
+				index = i;
+				dmax = d;
+			}
+		}
+
+		// If max distance is greater than epsilon, recursively simplify
+		if (dmax > epsilon)
+		{
+			// Recursive call
+			std::vector<cv::Point> recResults1;
+			std::vector<cv::Point> recResults2;
+			std::vector<cv::Point> firstLine(pointList.begin(), pointList.begin() + index + 1);
+			std::vector<cv::Point> lastLine(pointList.begin() + index, pointList.end());
+			RamerDouglasPeucker(firstLine, epsilon, recResults1);
+			RamerDouglasPeucker(lastLine, epsilon, recResults2);
+
+			// Build the result list
+			out.assign(recResults1.begin(), recResults1.end() - 1);
+			out.insert(out.end(), recResults2.begin(), recResults2.end());
+			if (out.size() < 2)
+				throw std::runtime_error("Problem assembling output");
+		}
+		else
+		{
+			//Just return start and end points
+			out.clear();
+			out.push_back(pointList[0]);//pointList[0]
+			out.push_back(pointList[end]);
+		}
 	}
 }
 #endif

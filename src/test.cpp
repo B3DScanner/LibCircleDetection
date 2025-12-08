@@ -18,7 +18,6 @@
 *     Pattern Recognition (2021).
 **************************************************************************************************************/
 
-#include "EDLib.h"
 #include <iostream>
 #include<opencv2/imgproc.hpp>
 #include <filesystem>
@@ -45,9 +44,10 @@ typedef struct threshold {
 
 int main()
 {
+	using namespace Zikai;
 
-	constexpr bool STEP_DISPLAY = false; // set to true to display the illustration for each step
-	constexpr bool USE_GAUSSIAN = true; // set to true to use Gaussian denoise (we do not use in paper)
+	constexpr bool STEP_DISPLAY = false; // set to ZIKAI_TRUE to display the illustration for each step
+	constexpr bool USE_GAUSSIAN = ZIKAI_TRUE; // set to ZIKAI_TRUE to use Gaussian denoise (we do not use in paper)
 
 	// You should create at least two directories: 'Images1' & 'result'
 	// If you have the ground truth, you can create the directory  'GT'
@@ -125,7 +125,7 @@ int main()
 		clock_t start, finish;
 		start = clock();
 		
-		EDPF testEDPF = EDPF(testImg);
+		EDPF testEDPF(testImg);
 		cv::Mat edgePFImage = testEDPF.getEdgeImage();
 		cv::Mat edge = edgePFImage.clone();
 		edge = edge * -1 + 255;
@@ -344,7 +344,7 @@ int main()
 		//finish = clock();
 		timeSum += ((float)(finish - start) / CLOCKS_PER_SEC);
 		//draw fit circles after clustering
-		cv::Mat detectCircles = drawResult(true, testImgOrigin, saveName, preCircles);//totalCircles preCircles
+		cv::Mat detectCircles = drawResult(ZIKAI_TRUE, testImgOrigin, saveName, preCircles);//totalCircles preCircles
 	//}//endfor    run 100 times and then calculate the average
 
 
