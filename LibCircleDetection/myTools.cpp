@@ -982,7 +982,11 @@ std::vector<Zikai::Circle> Zikai::circleFitGroupedArcs(const std::vector<std::ve
 		}//endfor
 
 		//fit
-		double xc, yc, r, inlierRatio, spanAngle;
+		double xc = -1.;
+		double yc = -1.;
+		double r = -1.;
+		double inlierRatio = 0.;
+		double spanAngle = 0.;
 		CircleFit(X, Y, X.size(), stEdMid, xc, yc, r, inlierRatio, spanAngle);
 
 
@@ -1022,7 +1026,12 @@ std::vector<Zikai::Circle> Zikai::circleFitClosedArcs(const std::vector<std::vec
 		}//endfor
 
 		//fit
-		double xc, yc, r, inlierRatio, spanAngle;
+		//double xc, yc, r, inlierRatio, spanAngle;
+		double xc = -1.;
+		double yc = -1.;
+		double r = -1.;
+		double inlierRatio = 0.;
+		double spanAngle = 0.;
 		CircleFit(X, Y, X.size(), threePt, xc, yc, r, inlierRatio, spanAngle);
 
 
