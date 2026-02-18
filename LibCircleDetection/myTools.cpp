@@ -1090,7 +1090,7 @@ std::vector<Zikai::Circle> Zikai::clusterCircles(std::vector<Circle> totalCircle
 			sort(simCircles.begin(), simCircles.end(), cmpInlier);
 		}// sort default: increase order; cmpInlier is decrease order
 		repCircles.push_back(simCircles.front());
-		std::cout << "Final inlier ratio" << simCircles.front().inlierRatio << std::endl;
+		//std::cout << "Final inlier ratio" << simCircles.front().inlierRatio << std::endl;
 
 	}
 	return repCircles;
@@ -1170,7 +1170,7 @@ std::vector<Zikai::Circle> Zikai::circleEstimateClosedArcs(std::vector<std::vect
 		double closedR;
 		cv::Point2f closedO;
 		estimateClosedCenterRadius(closedArcs[i], &closedR, &closedO);// estimate the center and radius
-		std::cout << i << "ClosedCenter: " << closedO.x << " " << closedO.y << std::endl;
+		//std::cout << i << "ClosedCenter: " << closedO.x << " " << closedO.y << std::endl;
 
 		int r = rand() % 256;
 		int g = rand() % 256;
@@ -1199,7 +1199,7 @@ std::vector<Zikai::Circle> Zikai::circleEstimateClosedArcs(std::vector<std::vect
 			addCircles.push_back(fitCircle);
 
 		}//endif
-		std::cout << "Add circle done" << std::endl;
+		//std::cout << "Add circle done" << std::endl;
 	}//endfor
 	return addCircles;
 }
@@ -1276,7 +1276,7 @@ void Zikai::LoadGT(std::vector<Circle>& gt, const std::string& sGtFileName)
 	std::ifstream in(sGtFileName);
 	if (!in.good())
 	{
-		std::cout << "Error opening: " << sGtFileName << std::endl;
+		//std::cout << "Error opening: " << sGtFileName << std::endl;
 		return;
 	}
 
